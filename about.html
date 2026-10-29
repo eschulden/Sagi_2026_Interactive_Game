@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>בשביל שגיא - על המשחק</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ---- about-page specific ---- */
+    .about-hero {
+      text-align: center;
+      padding: 10px 0 24px;
+    }
+    .about-hero .logo {
+      width: min(380px, 88%);
+      height: auto;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    .about-hero h1 {
+      font-size: 1.8rem;
+      margin: 0 0 10px;
+      color: var(--accent-dark);
+    }
+    .about-hero .tagline {
+      font-size: 1.15rem;
+      color: var(--muted);
+      margin: 0 auto;
+      max-width: 480px;
+    }
+
+    /* ---- dedication block ---- */
+    .dedication {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 24px;
+      text-align: center;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+    .dedication .portrait {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #fff;
+      box-shadow: var(--shadow);
+      background: #e9dcc9;
+      display: block;
+      margin: 0 auto 18px;
+    }
+    .dedication p { margin: 0 0 10px; }
+    .dedication .name {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent-dark);
+      margin-bottom: 4px;
+    }
+
+    /* ---- how it works steps ---- */
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--accent-dark);
+      margin: 32px 0 14px;
+      text-align: center;
+    }
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-body strong { display: block; font-size: 1.05rem; margin-bottom: 3px; }
+    .step-body p { margin: 0; color: var(--muted); font-size: .97rem; }
+
+    /* ---- games grid ---- */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .game-tile {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .game-tile .tile-icon { font-size: 2.2rem; }
+    .game-tile strong { display: block; margin: 8px 0 4px; font-size: 1rem; }
+    .game-tile p { margin: 0; font-size: .92rem; color: var(--muted); }
+
+    /* ---- closing ---- */
+    .closing {
+      text-align: center;
+      background: var(--accent-dark);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 28px 22px;
+      margin-bottom: 12px;
+    }
+    .closing p { margin: 0 0 8px; font-size: 1.08rem; line-height: 1.75; }
+    .closing p:last-child { margin: 0; font-weight: 700; font-size: 1.15rem; }
+
+    @media (max-width: 480px) {
+      .about-hero h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main>
+    <!-- ---- Hero ---- -->
+    <section class="about-hero">
+      <img class="logo" src="images/logo.webp" alt="בשביל שגיא">
+      <h1>משחק זיכרון לזכרו של שגיא</h1>
+      <p class="tagline">
+        לאורך השביל פוזרו קודי QR. סרקו, שחקו, למדו - וקחו איתכם משהו מהאיש שאהב כל כך את הארץ הזאת.
+      </p>
+    </section>
+
+    <!-- ---- Dedication ---- -->
+    <div class="dedication">
+      <img class="portrait" src="images/Sagi_html/main.jpeg" alt="שגיא">
+      <p class="name">שגיא</p>
+      <p>
+        שגיא אהב לטייל. לא רק ללכת - אלא להכיר, ללמוד, לשים לב לסימון על הסלע,
+        לעצור ליד מפל, לספר סיפור.<br>
+        השביל הזה הוא שלו.
+      </p>
+    </div>
+
+    <!-- ---- How it works ---- -->
+    <h2 class="section-title">איך זה עובד?</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>מצאו שלט עם קוד QR</strong>
+          <p>לאורך המסלול יש תחנות עם קוד QR. כל תחנה היא הרפתקה אחרת.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>סרקו עם הטלפון</strong>
+          <p>פתחו את מצלמת הטלפון וכוונו אותה לקוד. הפעילות נפתחת מיד - ללא אפליקציה.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>שחקו, למדו, היזכרו</strong>
+          <p>כל תחנה מציעה פעילות אחרת: חידון, משחק מפה, זיכרון על שגיא.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>עברו לתחנה הבאה</strong>
+          <p>סיימתם? המשיכו בשביל ופגשו את הסימון הבא.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- Closing ---- -->
+    <div class="closing" style="margin-top:28px">
+      <p>
+        "לא משנה כמה קילומטרים, תמיד יש עוד משהו לראות מעבר לפנייה."
+      </p>
+      <p>צאו לדרך.</p>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="js/site.js"></script>
+</body>
+</html>

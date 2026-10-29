@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>על שגיא</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: var(--accent-dark);
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 6px 0;
+      margin-bottom: 8px;
+      opacity: .8;
+    }
+    .back-btn:hover { opacity: 1; text-decoration: underline; }
+
+    .sagi-hero {
+      text-align: center;
+      padding: 24px 0 20px;
+    }
+    .sagi-hero .portrait {
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid #fff;
+      box-shadow: var(--shadow);
+      background: #e9dcc9;
+      display: block;
+      margin: 0 auto 16px;
+    }
+    .sagi-hero h1 {
+      font-size: 2rem;
+      margin: 0 0 6px;
+      color: var(--accent-dark);
+    }
+    .sagi-hero .years {
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    /* ---- bio card ---- */
+    .bio {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      font-size: 1.05rem;
+      line-height: 1.85;
+      margin-bottom: 20px;
+    }
+    .bio p { margin: 0 0 14px; }
+    .bio p:last-child { margin: 0; }
+
+    /* ---- facts strip ---- */
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .fact {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 14px;
+      text-align: center;
+    }
+    .fact .fact-icon { font-size: 1.8rem; }
+    .fact .fact-label { font-size: .82rem; color: var(--muted); margin: 4px 0 2px; }
+    .fact .fact-val { font-weight: 800; font-size: 1rem; color: var(--accent-dark); }
+
+    /* ---- memory blocks ---- */
+    .memories { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+    .memory-block {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 22px;
+      border-right: 5px solid var(--accent);
+    }
+    .memory-block .mem-author {
+      font-size: .88rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .memory-block p { margin: 0; font-size: 1rem; line-height: 1.75; font-style: italic; }
+
+    /* ---- gallery strip ---- */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .gallery img {
+      width: 100%; aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+    .gallery-placeholder {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      background: #e9e3d8;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: #b5aa98;
+    }
+
+    /* ---- lightbox ---- */
+    .lightbox {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.88);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+      max-width: 94vw; max-height: 92vh;
+      border-radius: 10px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.6);
+      object-fit: contain;
+    }
+    .lightbox-close {
+      position: absolute; top: 16px; left: 16px;
+      background: rgba(255,255,255,.18); border: none;
+      color: #fff; font-size: 1.6rem; line-height: 1;
+      width: 40px; height: 40px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,.32); }
+    .gallery img, .portrait { cursor: zoom-in; }
+
+    /* ---- closing quote ---- */
+    .sagi-quote {
+      background: var(--accent-dark);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .sagi-quote p { margin: 0 0 6px; font-size: 1.1rem; line-height: 1.75; font-style: italic; }
+    .sagi-quote .attr { font-style: normal; font-size: .95rem; opacity: .8; }
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main>
+
+    <!-- ---- Back button ---- -->
+    <button onclick="history.back()" class="back-btn">&#8594; חזרה</button>
+
+    <!-- ---- Hero ---- -->
+    <section class="sagi-hero">
+      <img class="portrait" src="images/Sagi_html/main.jpeg" alt="שגיא רובינשטיין">
+      <h1>סרן שגיא רובינשטיין ז״ל</h1>
+      <p class="years">1993 – 2024</p>
+    </section>
+
+    <!-- ---- Opening quote ---- -->
+    <div class="sagi-quote" style="margin-bottom:20px">
+      <p>"הדבר הכי גדול בעולם<br>הוא לעשות טובה למישהו אחר"</p>
+      <span class="attr">- האדמו"ר מפיאסצנה</span>
+    </div>
+
+    <!-- ---- Bio ---- -->
+    <div class="bio">
+      <p>
+        שגיא, בעל אוהב לטל ואב מסור לעמיצור, מעוז ורונה.<br>
+        בן אהוב לדליה ויורם ואח לרועי, ענבר ועומר.<br>
+        גדל בפתח תקווה בשכונת הדר גנים.
+      </p>
+      <p>
+        שגיא עשה כל שביכולתו להפוך את העולם למקום טוב יותר עבור כולם.
+        הקדיש את חייו למען האחר - התנדב כבר מנערותו ואף פעם לא הפסיק.
+        התנדב בארגונים רבים ומשמעותיים כמו מגן דוד אדום, צח"י, עמותת "שמחה לילד" וארגונים נוספים למען אוכלוסיות עם צרכים מיוחדים.
+      </p>
+      <p>
+        שגיא הוא איש של עשייה ונתינה ללא גבול. ראה כל אדם באור ייחודי, והאמין ביכולתם של הסובבים אותו להיות הגרסה הטובה ביותר של עצמם. הוא תמך, דאג ופעל ללא לאות כדי להעצים כל מי שפגש בדרכו.
+      </p>
+      <p>
+        לאורך כל חייו התעניין בעולם הרפואה, עבד במד"א כפראמדיק והתחיל את דרכו בהגשמת חלומו להיות רופא.
+      </p>
+      <p>
+        שגיא אהב כל כך את ארץ ישראל שלנו, אהב לטייל בה, לטפח אותה ולחיות למענה.
+        התגייס לחטיבת הצנחנים, גדוד 890.
+        יצא לקורס מכ"ים והיה מ"מ בגדוד 890, קורס קצינים, היה סמ"פ בגדוד 101.
+        כקצין מסור, שגיא תרם למדינה ימים רבים בשירות המילואים, בגדוד חירם 9236, והיה שותף להגנה על גבולה הצפוני של ישראל.
+      </p>
+      <p style="font-weight:700;border-top:1px solid #e4d6c2;padding-top:14px;margin-top:6px">
+        סרן (במיל') שגיא רובינשטיין נפל בדרום לבנון בעת פעילות מבצעית בתאריך 8.12.2024, ז' בכסלו תשפ"ה, בן 31 היה בנופלו.
+      </p>
+    </div>
+
+    <!-- ---- Quote ---- -->
+    <div class="sagi-quote">
+      <p>שגיא האמין שצריך להיות איפה שצריך ולא איפה שנוח - וכך הוא חי.<br>
+      נכח בכל סביבה שבה הרגיש שצריך לפעול ולעשות.</p>
+      <p>שנזכה ללכת בדרכו ולהפיץ את האור המיוחד שלו בעולם.</p>
+    </div>
+
+    <!-- ---- Gallery ---- -->
+    <h2 style="font-size:1.25rem;color:var(--accent-dark);margin:28px 0 14px;text-align:center">תמונות</h2>
+    <div class="gallery">
+      <img src="images/Sagi_html/1.jpeg" alt="שגיא">
+      <img src="images/Sagi_html/2.jpeg" alt="שגיא">
+      <img src="images/Sagi_html/3.jpeg" alt="שגיא">
+      <img src="images/Sagi_html/4.jpeg" alt="שגיא">
+      <img src="images/Sagi_html/5.jpeg" alt="שגיא">
+    </div>
+
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+    <button class="lightbox-close" id="lightbox-close" aria-label="סגור">✕</button>
+    <img id="lightbox-img" src="" alt="">
+  </div>
+
+  <footer id="site-footer"></footer>
+  <script src="js/site.js"></script>
+  <script>
+    (function () {
+      const lb = document.getElementById('lightbox');
+      const img = document.getElementById('lightbox-img');
+      document.querySelectorAll('.gallery img, .portrait').forEach(function (el) {
+        el.addEventListener('click', function () {
+          img.src = el.src;
+          img.alt = el.alt;
+          lb.classList.add('open');
+        });
+      });
+      function close() { lb.classList.remove('open'); img.src = ''; }
+      document.getElementById('lightbox-close').addEventListener('click', close);
+      lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    })();
+  </script>
+</body>
+</html>

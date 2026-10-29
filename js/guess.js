@@ -1,0 +1,122 @@
+(function () {
+  const G = window.GUESS;
+  const M = window.IsraelMap;
+  const root = document.getElementById('guess');
+  const NS = 'http://www.w3.org/2000/svg';
+
+  let idx = 0, score = 0, answered = false, hintsUsed = 0;
+  const HINT_COST = 2;
+  const maxScore = G.places.length * 10;
+
+  function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+
+  function pointsFor(km) {
+    if (km <= 10) return 10;
+    if (km <= 25) return 8;
+    if (km <= 50) return 6;
+    if (km <= 100) return 4;
+    if (km <= 150) return 2;
+    return 0;
+  }
+
+  function start() {
+    idx = 0; score = 0;
+    root.innerHTML = '<div class="card" style="text-align:center"><h2>נחשו את המקום</h2><p class="lead">' + esc(G.intro) +
+      '</p><button class="btn" id="go">מתחילים</button></div>';
+    document.getElementById('go').onclick = show;
+  }
+
+  function show() {
+    answered = false; hintsUsed = 0;
+    const p = G.places[idx];
+    const pct = (idx / G.places.length) * 100;
+    root.innerHTML = '<div class="game-layout"><div class="map-wrap"><svg id="gmap" viewBox="0 0 ' + M.W + ' ' + M.H +
+      '" role="img" aria-label="מפת ישראל - לחצו כדי לנחש" style="cursor:crosshair">' +
+      M.baseSvg() + '</svg></div>' +
+      '<div class="card"><div class="stats"><span>מקום ' + (idx + 1) + ' מתוך ' + G.places.length +
+      '</span><span>ניקוד: ' + score + '</span></div><div class="progress"><div style="width:' + pct + '%"></div></div>' +
+      (p.image ? '<img src="' + esc(p.image) + '" alt="" style="width:100%;border-radius:12px;margin-bottom:12px">' : '') +
+      '<h2>איפה זה?</h2><p>' + esc(p.clue) + '</p><ul class="hints" id="hints"></ul>' +
+      (p.hints && p.hints.length ? '<button class="btn secondary" id="hintBtn"></button>' : '') +
+      '<p class="lead" id="hint">לחצו על המפה כדי לסמן את הניחוש.</p><div id="after"></div></div></div>';
+    document.getElementById('gmap').addEventListener('click', onMapClick);
+    const hb = document.getElementById('hintBtn');
+    if (hb) {
+      const label = () => { hb.textContent = '💡 רמז נוסף (מחיר: ' + HINT_COST + ' נקודות)'; };
+      label();
+      hb.onclick = () => {
+        const li = document.createElement('li');
+        li.textContent = p.hints[hintsUsed++];
+        document.getElementById('hints').appendChild(li);
+        if (hintsUsed >= p.hints.length) hb.remove();
+      };
+    }
+  }
+
+  function mark(svg, x, y, color, r) {
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', r || 6);
+    c.setAttribute('fill', color); c.setAttribute('stroke', '#fff'); c.setAttribute('stroke-width', 2);
+    svg.appendChild(c);
+  }
+
+  function onMapClick(e) {
+    if (answered) return;
+    answered = true;
+    const svg = e.currentTarget;
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const p = G.places[idx];
+    const km = M.km(M.latOf(q.y), M.lonOf(q.x), p.lat, p.lon);
+    const base = pointsFor(km);
+    // Each hint costs points, but a close guess still earns at least 1
+    const pts = base ? Math.max(1, base - hintsUsed * HINT_COST) : 0;
+    score += pts;
+    const hb = document.getElementById('hintBtn');
+    if (hb) hb.remove();
+    // Show the hints that weren't asked for, so the player learns them too
+    (p.hints || []).slice(hintsUsed).forEach(function (h) {
+      const li = document.createElement('li');
+      li.className = 'unused';
+      li.textContent = h;
+      document.getElementById('hints').appendChild(li);
+    });
+
+    const tx = M.px(p.lon), ty = M.py(p.lat);
+    const line = document.createElementNS(NS, 'line');
+    line.setAttribute('x1', q.x); line.setAttribute('y1', q.y);
+    line.setAttribute('x2', tx); line.setAttribute('y2', ty);
+    line.setAttribute('class', 'route');
+    svg.appendChild(line);
+    mark(svg, q.x, q.y, '#c8612b');
+    mark(svg, tx, ty, '#2e8b57', 7);
+    const label = document.createElementNS(NS, 'text');
+    label.setAttribute('x', tx + 10); label.setAttribute('y', ty + 4);
+    label.setAttribute('style', 'font-size:11px;font-weight:700;paint-order:stroke;stroke:#fff;stroke-width:3px');
+    label.textContent = p.name;
+    svg.appendChild(label);
+    svg.style.cursor = 'default';
+
+    document.getElementById('hint').remove();
+    const last = idx === G.places.length - 1;
+    document.getElementById('after').innerHTML =
+      '<div class="feedback"><strong>' + esc(p.name) + '</strong><br>' +
+      (km < 1 ? 'בול!' : 'פספסתם ב-' + Math.round(km) + ' ק"מ') + (pts ? ' · ' + pts + ' נקודות' + (hintsUsed ? ' (' + (hintsUsed === 1 ? 'עם רמז' : 'עם ' + hintsUsed + ' רמזים') + ')' : '') : '') + '</div>' +
+      (p.fact ? '<div class="memory">' + esc(p.fact) + '</div>' : '') +
+      '<button class="btn" id="next">' + (last ? 'לתוצאה' : 'למקום הבא') + '</button>';
+    document.getElementById('next').onclick = () => { idx++; idx < G.places.length ? show() : finish(); };
+  }
+
+  function finish() {
+    const pct = (score / maxScore) * 100;
+    let end = G.endings[0];
+    G.endings.forEach(e => { if (pct >= e.min) end = e; });
+    root.innerHTML = '<div class="card" style="text-align:center"><h2>סיימתם!</h2>' +
+      '<p style="font-size:2.4rem;margin:0">📍</p><h2>' + esc(end.title) + '</h2><p class="lead">' + esc(end.text) +
+      '</p><p>ניקוד: <strong>' + score + ' מתוך ' + maxScore + '</strong></p><button class="btn" id="again">שוב</button></div>';
+    document.getElementById('again').onclick = start;
+  }
+
+  start();
+})();
