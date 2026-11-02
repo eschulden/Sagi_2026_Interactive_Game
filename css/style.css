@@ -268,3 +268,20 @@ a.btn { display: inline-block; text-decoration: none; }
   .btn-row .btn, .memories-cta .btn { width: 100%; box-sizing: border-box; text-align: center; }
   .memories-wall { column-width: auto; column-count: 1; }
 }
+
+/* Photo hunt gallery: green = found, red = gave up */
+.photo-count { text-align: center; color: var(--muted); margin: 0 0 16px; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+.photo-tile {
+  display: block; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+  border: 4px solid transparent; overflow: hidden; text-decoration: none; color: var(--ink); transition: transform .12s;
+}
+.photo-tile:hover { transform: translateY(-3px); }
+.photo-tile img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.photo-tile-label { display: block; padding: 8px 10px; font-size: .92rem; color: var(--muted); }
+.photo-tile-label strong { display: block; color: var(--ink); }
+.photo-tile.found { border-color: var(--good); }
+.photo-tile.found .photo-tile-label { background: #e8f6ee; color: var(--good); }
+.photo-tile.missed { border-color: var(--bad); }
+.photo-tile.missed .photo-tile-label { background: #fbeceb; color: var(--bad); }
+@media (max-width: 420px) { .photo-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }

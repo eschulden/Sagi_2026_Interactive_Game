@@ -2,10 +2,22 @@
   const H = window.PHOTO_HUNT;
   const root = document.getElementById('photo-hunt');
 
-  let idx = 0, score = 0, tries = 0, lastM = null, busy = false;
-  const maxScore = H.photos.length * 10;
+  let idx = 0, tries = 0, lastM = null, busy = false;
   // A fix this bad is barely usable; we ask the player to wait for a better one
   const POOR_ACC_M = 40;
+  // The game is played one photo at a time: ?photo=N, opened from photo-gallery.html
+  const pick = /[?&]photo=(\d+)/.exec(location.search);
+  const single = pick && +pick[1] >= 1 && +pick[1] <= H.photos.length ? +pick[1] - 1 : null;
+  const gallery = 'photo-gallery.html' + (location.search.indexOf('hidden') !== -1 ? '?hidden' : '');
+
+  // Last result per photo, keyed by image path: points (0 = gave up). The gallery colors tiles by it.
+  // photohunt:best holds the current total, for summary.html.
+  function saveResult(pts) {
+    const r = Store.get('photohunt:results') || {};
+    r[H.photos[idx].image] = pts;
+    Store.set('photohunt:results', r);
+    Store.set('photohunt:best', Object.keys(r).reduce((sum, k) => sum + r[k], 0));
+  }
 
   function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
@@ -30,9 +42,9 @@
   let liveId = null;
   function accLabel(acc) {
     const m = Math.round(acc);
-    if (acc <= 10) return '🟢 דיוק GPS: ' + m + ' מטר - מצוין';
-    if (acc <= 25) return '🟡 דיוק GPS: ' + m + ' מטר - סביר';
-    return '🔴 דיוק GPS: ' + m + ' מטר - חלש. נסו לצאת למקום פתוח יותר';
+    if (acc <= 10) return '🟢 קליטה מצוינת. הטלפון יודע איפה אתם בטעות של עד ' + m + ' מטר. אפשר ללחוץ "אני כאן".';
+    if (acc <= 25) return '🟡 קליטה בינונית. הטלפון יודע איפה אתם בטעות של עד ' + m + ' מטר. אפשר לנסות, או לחכות כמה שניות שהקליטה תשתפר.';
+    return '🔴 קליטה חלשה. הטלפון יכול לטעות במיקום שלכם בעד ' + m + ' מטר. צאו למקום פתוח, רחוק מעצים ומבניינים, וחכו כמה שניות.';
   }
   function startLive() {
     stopLive();
@@ -42,7 +54,7 @@
       if (el) el.textContent = accLabel(pos.coords.accuracy);
     }, function () {
       const el = document.getElementById('gps');
-      if (el) el.textContent = '⚪ אין עדיין מיקום';
+      if (el) el.textContent = '⚪ הטלפון עוד לא מצא את המיקום שלכם. בדקו שה-GPS דלוק ושאישרתם גישה למיקום.';
     }, { enableHighAccuracy: true, maximumAge: 0 });
   }
   function stopLive() {
@@ -84,27 +96,15 @@
     });
   }
 
-  function start() {
-    idx = 0; score = 0;
-    root.innerHTML = '<div class="card" style="text-align:center"><h2>איפה צילמתי?</h2><p class="lead">' + esc(H.intro) +
-      '</p><p>המשחק משתמש במיקום של הטלפון, אז כשתתבקשו - אשרו גישה למיקום.</p>' +
-      '<button class="btn" id="go">מתחילים</button>' + Store.startExtras('photohunt', H.photos.length, maxScore) + '</div>';
-    document.getElementById('go').onclick = show;
-    const r = document.getElementById('resume');
-    if (r) r.onclick = () => { const p = Store.progress('photohunt', H.photos.length); idx = p.i; score = p.score; show(); };
-  }
-
   function show() {
     tries = 0; lastM = null; busy = false;
-    Store.set('photohunt', { i: idx, score: score });
     const p = H.photos[idx];
-    const pct = (idx / H.photos.length) * 100;
     root.innerHTML = '<div class="card"><div class="stats"><span>תמונה ' + (idx + 1) + ' מתוך ' + H.photos.length +
-      '</span><span>ניקוד: ' + score + '</span></div><div class="progress"><div style="width:' + pct + '%"></div></div>' +
+      '</span><a href="' + gallery + '">כל התמונות</a></div>' +
       '<img src="' + esc(p.image) + '" alt="התמונה שצריך למצוא" style="width:100%;border-radius:12px;margin-bottom:12px">' +
       (p.hint ? '<p><strong>רמז:</strong> ' + esc(p.hint) + '</p>' : '') +
       '<p class="lead">עמדו בדיוק במקום שממנו צולמה התמונה, ולחצו על הכפתור.</p>' +
-      '<p id="gps" style="color:var(--muted)">⚪ מחפשים קליטת GPS...</p>' +
+      '<p id="gps" style="color:var(--muted)">⚪ מחפשים את המיקום שלכם...</p>' +
       '<div id="status"></div>' +
       '<p><button class="btn" id="here">📍 אני כאן</button></p>' +
       '<p><button class="btn secondary" id="skip">מוותרים על התמונה הזו</button></p></div>';
@@ -122,7 +122,7 @@
     btn.disabled = true; btn.textContent = 'מאתרים מיקום...';
     status('<div class="feedback">מחפשים את המיקום שלכם. עמדו רגע במקום...</div>');
     locate(function (acc) {
-      status('<div class="feedback">מחפשים את המיקום שלכם... (דיוק: ' + Math.round(acc) + ' מטר)</div>');
+      status('<div class="feedback">מחפשים את המיקום שלכם... (כרגע בטעות של עד ' + Math.round(acc) + ' מטר)</div>');
     }).then(function (pos) {
       busy = false;
       btn.disabled = false; btn.textContent = '📍 אני כאן';
@@ -141,7 +141,7 @@
       }
       lastM = raw;
       if (tries >= 2) msg += '<br>🧭 המקום נמצא ל<strong>' + direction(c.latitude, c.longitude, p.lat, p.lon) + '</strong> מכם.';
-      if (c.accuracy > POOR_ACC_M) msg += '<br>⚠️ הקליטה חלשה כרגע (דיוק ' + Math.round(c.accuracy) + ' מטר). נסו שוב בעוד רגע, במקום פתוח יותר.';
+      if (c.accuracy > POOR_ACC_M) msg += '<br>⚠️ הקליטה חלשה כרגע, אז המרחק יכול לטעות בעד ' + Math.round(c.accuracy) + ' מטר. נסו שוב בעוד רגע, במקום פתוח יותר.';
       status('<div class="feedback">' + msg + '</div>' +
         (pts ? '<p>קרוב! אפשר לקחת ' + pts + ' נקודות עכשיו, או להתקרב עוד ולנסות לקבל 10.</p>' +
                '<p><button class="btn secondary" id="take">לקחת ' + pts + ' נקודות</button></p>' : ''));
@@ -156,9 +156,8 @@
 
   function reveal(pts, m) {
     stopLive();
-    score += pts;
+    saveResult(pts);
     const p = H.photos[idx];
-    const last = idx === H.photos.length - 1;
     const head = pts === 10 ? '🎯 מצאתם! ' + (m !== null && m < 5 ? 'בול במקום.' : 'במרחק ' + Math.round(m) + ' מטר.') + ' · 10 נקודות'
                : pts ? 'קרוב מספיק · ' + pts + ' נקודות'
                : 'התמונה הזו נשארה בגדר תעלומה.';
@@ -166,19 +165,7 @@
       '<div class="feedback"><strong>' + head + '</strong></div>' +
       (p.fact ? '<div class="memory">' + esc(p.fact) + '</div>' : '') +
       (pts ? '' : '<p><a href="https://www.google.com/maps/search/?api=1&query=' + p.lat + ',' + p.lon + '" target="_blank" rel="noopener">איפה זה היה? פתחו במפה</a></p>') +
-      '<button class="btn" id="next">' + (last ? 'לתוצאה' : 'לתמונה הבאה') + '</button></div>';
-    document.getElementById('next').onclick = () => { idx++; idx < H.photos.length ? show() : finish(); };
-  }
-
-  function finish() {
-    const pct = (score / maxScore) * 100;
-    let end = H.endings[0];
-    H.endings.forEach(e => { if (pct >= e.min) end = e; });
-    const best = Store.finish('photohunt', score);
-    root.innerHTML = '<div class="card" style="text-align:center"><h2>סיימתם!</h2>' +
-      '<p style="font-size:2.4rem;margin:0">📸</p><h2>' + esc(end.title) + '</h2><p class="lead">' + esc(end.text) +
-      '</p><p>ניקוד: <strong>' + score + ' מתוך ' + maxScore + '</strong> · שיא: ' + best + '</p><button class="btn" id="again">שוב</button></div>';
-    document.getElementById('again').onclick = start;
+      '<a class="btn" href="' + gallery + '">חזרה לכל התמונות</a></div>';
   }
 
   // ?setup: live coordinates, for recording where each photo was taken
@@ -200,5 +187,7 @@
     };
   }
 
-  /[?&]setup\b/.test(location.search) ? setup() : start();
+  if (/[?&]setup\b/.test(location.search)) setup();
+  else if (single !== null) { idx = single; show(); }
+  else location.replace(gallery);
 })();

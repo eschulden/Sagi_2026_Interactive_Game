@@ -7,7 +7,7 @@
 |---|---|
 | `index.html` | דף הבית (הכרטיסים נוצרים אוטומטית) |
 | `game.html` + `data/game-data.js` | משחק המסע בישראל. ערכו תחנות ושאלות בקובץ הנתונים |
-| `photo-hunt.html` + `data/photo-hunt-data.js` | משחק "איפה צילמתי?" לפי GPS. למיקום של כל תמונה פתחו `photo-hunt.html?setup` בנקודה עצמה |
+| `photo-gallery.html` + `photo-hunt.html` + `data/photo-hunt-data.js` | משחק "איפה צילמתי?" לפי GPS: הגלריה מציגה את כל התמונות, ו-`photo-hunt.html?photo=N` משחק תמונה אחת. למיקום של כל תמונה פתחו `photo-hunt.html?setup` בנקודה עצמה |
 | `quiz.html` + `data/quiz-data.js` | שאלות על שגיא. ערכו שאלות בקובץ הנתונים |
 | `js/site.js` | התפריט ורשימת הדפים |
 | `page-template.html` | תבנית לדף חדש |
