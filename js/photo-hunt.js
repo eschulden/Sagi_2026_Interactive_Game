@@ -62,6 +62,13 @@
     liveId = null;
   }
 
+  function dist(m) { return m < 1000 ? Math.round(m) + ' מטר' : (m / 1000).toFixed(1) + ' ק"מ'; }
+
+  // cls: found (green) / near (yellow) / far (red)
+  function box(cls, title, lines) {
+    return '<div class="feedback ' + cls + '"><span class="result-title">' + title + '</span>' + lines.join('<br>') + '</div>';
+  }
+
   function pointsFor(m) {
     if (m <= H.FULL_M) return 10;
     if (m <= H.HALF_M) return 5;
@@ -133,24 +140,30 @@
       const pts = pointsFor(m);
       if (pts === 10) return reveal(pts, raw);
       tries++;
-      let msg = 'אתם במרחק של בערך <strong>' + Math.round(raw) + ' מטר</strong>.';
+      const d = '<strong>' + dist(raw) + '</strong>';
+      const [cls, title, line] =
+        pts ? ['near', '🟡 ממש קרוב!', 'אתם בערך ' + d + ' מהמקום.'] :
+        raw <= 200 ? ['near', '🟡 אתם מתקרבים', 'נשארו בערך ' + d + ' עד המקום.'] :
+        raw <= 1000 ? ['far', '🔴 אתם רחוקים', 'אתם בערך ' + d + ' מהמקום.'] :
+        ['far', '🔴 אתם רחוקים מאוד', 'אתם בערך ' + d + ' מהמקום. הסתכלו שוב בתמונה וחפשו רמזים.'];
+      const lines = [line];
       if (lastM !== null) {
-        if (raw < lastM - 5) msg += ' 🔥 חם יותר!';
-        else if (raw > lastM + 5) msg += ' 🧊 קר יותר.';
-        else msg += ' בערך אותו מרחק.';
+        if (raw < lastM - 5) lines.push('🔥 חם יותר - התקרבתם מאז הניסיון הקודם.');
+        else if (raw > lastM + 5) lines.push('🧊 קר יותר - התרחקתם מאז הניסיון הקודם.');
+        else lines.push('↔️ בערך באותו מרחק כמו בניסיון הקודם.');
       }
       lastM = raw;
-      if (tries >= 2) msg += '<br>🧭 המקום נמצא ל<strong>' + direction(c.latitude, c.longitude, p.lat, p.lon) + '</strong> מכם.';
-      if (c.accuracy > POOR_ACC_M) msg += '<br>⚠️ הקליטה חלשה כרגע, אז המרחק יכול לטעות בעד ' + Math.round(c.accuracy) + ' מטר. נסו שוב בעוד רגע, במקום פתוח יותר.';
-      status('<div class="feedback">' + msg + '</div>' +
-        (pts ? '<p>קרוב! אפשר לקחת ' + pts + ' נקודות עכשיו, או להתקרב עוד ולנסות לקבל 10.</p>' +
+      if (tries >= 2) lines.push('🧭 המקום נמצא ל<strong>' + direction(c.latitude, c.longitude, p.lat, p.lon) + '</strong> מכם.');
+      if (c.accuracy > POOR_ACC_M) lines.push('⚠️ הקליטה חלשה כרגע, אז המרחק יכול לטעות בעד ' + Math.round(c.accuracy) + ' מטר. נסו שוב בעוד רגע, במקום פתוח יותר.');
+      status(box(cls, title, lines) +
+        (pts ? '<p>אפשר לקחת ' + pts + ' נקודות עכשיו, או להתקרב עוד קצת ולנסות לקבל 10.</p>' +
                '<p><button class="btn secondary" id="take">לקחת ' + pts + ' נקודות</button></p>' : ''));
       const take = document.getElementById('take');
       if (take) take.onclick = () => reveal(pts, raw);
     }).catch(function (err) {
       busy = false;
       btn.disabled = false; btn.textContent = '📍 אני כאן';
-      status('<div class="feedback" style="background:#fbeceb">' + esc(geoError(err)) + '</div>');
+      status(box('far', '⚠️ לא הצלחנו למצוא את המיקום שלכם', [esc(geoError(err))]));
     });
   }
 
@@ -158,11 +171,12 @@
     stopLive();
     saveResult(pts);
     const p = H.photos[idx];
-    const head = pts === 10 ? '🎯 מצאתם! ' + (m !== null && m < 5 ? 'בול במקום.' : 'במרחק ' + Math.round(m) + ' מטר.') + ' · 10 נקודות'
-               : pts ? 'קרוב מספיק · ' + pts + ' נקודות'
-               : 'התמונה הזו נשארה בגדר תעלומה.';
+    const result =
+      pts === 10 ? box('found', '🎯 מצאתם את המקום!', [m < 5 ? 'עמדתם בדיוק במקום שבו צילמתי.' : 'הייתם רק ' + dist(m) + ' מהנקודה שבה צילמתי.', 'קיבלתם <strong>10 נקודות</strong>.']) :
+      pts ? box('found', '👍 כמעט בול!', ['הייתם בערך ' + dist(m) + ' מהנקודה שבה צילמתי.', 'קיבלתם <strong>' + pts + ' נקודות</strong>.']) :
+      box('far', '🤷 התמונה הזו נשארה בגדר תעלומה', ['לא נורא - אפשר לנסות אותה שוב מתוך כל התמונות.']);
     root.innerHTML = '<div class="card"><img src="' + esc(p.image) + '" alt="" style="width:100%;border-radius:12px;margin-bottom:12px">' +
-      '<div class="feedback"><strong>' + head + '</strong></div>' +
+      result +
       (p.fact ? '<div class="memory">' + esc(p.fact) + '</div>' : '') +
       (pts ? '' : '<p><a href="https://www.google.com/maps/search/?api=1&query=' + p.lat + ',' + p.lon + '" target="_blank" rel="noopener">איפה זה היה? פתחו במפה</a></p>') +
       '<a class="btn" href="' + gallery + '">חזרה לכל התמונות</a></div>';

@@ -280,3 +280,9 @@ a.btn { display: inline-block; text-decoration: none; }
 .photo-tile.missed { border-color: var(--bad); }
 .photo-tile.missed .photo-tile-label { background: #fbeceb; color: var(--bad); }
 @media (max-width: 420px) { .photo-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+
+/* Photo hunt results: green = found, yellow = getting close, red = far / gave up */
+.feedback .result-title { display: block; font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
+.feedback.found { background: #e8f6ee; border-right: 5px solid var(--good); }
+.feedback.near { background: #fff6d6; border-right: 5px solid #d9a400; }
+.feedback.far { background: #fbeceb; border-right: 5px solid var(--bad); }
