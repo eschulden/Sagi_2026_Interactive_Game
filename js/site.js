@@ -20,10 +20,12 @@ const PAGES = [
   { file: 'game.html',          title: 'מסע בישראל',               icon: '🗺️', desc: 'משחק מסע בין אתרים בארץ - נסו להגיע לכל התחנות.' },
   { file: 'guess.html',         title: 'נחשו את המקום',            icon: '📍', desc: 'רמז על מקום בארץ - סמנו על המפה איפה הוא.' },
   { file: 'trail-markers.html', title: 'סימוני שבילים',            icon: '🥾', desc: 'חידון על סימוני שבילים וכללי הליכה בשטח.' },
+  { file: 'photo-hunt.html',    title: 'איפה צילמתי?',            icon: '📸', desc: 'תמונה מהמסלול - מצאו את הנקודה שבה צולמה ולחצו "אני כאן".' },
   { file: 'know-place.html',    title: 'הכר את המקום',             icon: '🌳', desc: 'חידון על נחל השופט - המקום שבו אתם מטיילים עכשיו.' },
   { file: 'quiz.html',         title: 'כמה אתם מכירים את שגיא?', icon: '❓', desc: 'שאלות על שגיא - הוכיחו שאתם באמת מכירים אותו.' },
   { file: 'memory-add.html',    title: 'קחו החלטה טובה',           icon: '✍️', desc: 'כתבו החלטה טובה שאתם לוקחים לעצמכם, והיא תישמר.' },
   { file: 'memories.html',      title: 'ההחלטות הטובות',          icon: '🌱', desc: 'כל ההחלטות הטובות שמטיילים לקחו לעצמם.' },
+  { file: 'summary.html',      title: 'סיכום המשחק',             icon: '🌅', desc: 'סוף המשחק - סיכום הפעילויות ומילות סיום.' },
   // { file: 'photos.html', title: 'תמונות', icon: '📷', desc: 'אלבום תמונות.' },
 ];
 
@@ -37,13 +39,27 @@ const PAGES = [
   const hubMode = location.search.indexOf('hidden') === -1
                   && (typeof window.SHOW_NAV === 'undefined' || window.SHOW_NAV !== false);
 
+  // Pages become visible in the menu once visited (any mode, incl. ?hidden), and stay visible.
+  // If storage is blocked, nothing can be remembered, so show everything.
+  const VISITED_KEY = 'sagi2026:visited';
+  let visited = null;
+  try {
+    visited = JSON.parse(localStorage.getItem(VISITED_KEY)) || [];
+    if (PAGES.some(p => p.file === current) && visited.indexOf(current) === -1) {
+      visited.push(current);
+      localStorage.setItem(VISITED_KEY, JSON.stringify(visited));
+    }
+  } catch (e) { visited = null; }
+  const ALWAYS_VISIBLE = ['main.html', 'sagi.html'];
+  const visible = PAGES.filter(p => ALWAYS_VISIBLE.indexOf(p.file) !== -1 || visited === null || visited.indexOf(p.file) !== -1);
+
   // Links stay bare — nav is on by default, no need to propagate a param
   const href = f => f;
 
   const header = document.getElementById('site-header');
   if (header) {
     if (hubMode) {
-      const navLinks = PAGES.map(p =>
+      const navLinks = visible.map(p =>
         '<a href="' + href(p.file) + '"' + (p.file === current ? ' class="active"' : '') + '>' + p.icon + ' ' + p.title + '</a>'
       ).join('');
 
@@ -98,7 +114,7 @@ const PAGES = [
   // Page cards: only on main.html (hub mode)
   const grid = document.getElementById('page-cards');
   if (grid) {
-    grid.innerHTML = PAGES.filter(p => p.file !== 'main.html').map(p =>
+    grid.innerHTML = visible.filter(p => p.file !== 'main.html').map(p =>
       '<a class="page-card" href="' + href(p.file) + '"><div class="icon">' + p.icon + '</div><h3>' + p.title +
       '</h3><p>' + (p.desc || '') + '</p></a>'
     ).join('');

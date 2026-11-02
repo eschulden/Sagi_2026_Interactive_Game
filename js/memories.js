@@ -11,7 +11,7 @@
   function add() {
     if (!C.FORM_URL || !C.FIELD_TEXT) return notConfigured();
     root.innerHTML = '<div class="card"><form id="mem-form">' +
-      '<label>שם <small>(לא חובה)</small><input id="mem-name" maxlength="' + C.MAX_NAME + '" autocomplete="off"></label>' +
+      '<label>שם<input id="mem-name" maxlength="' + C.MAX_NAME + '" autocomplete="off" required></label>' +
       '<label>ההחלטה הטובה שלכם<textarea id="mem-text" rows="6" maxlength="' + C.MAX_TEXT + '" required></textarea><div class="mem-counter" id="mem-counter">0 / ' + C.MAX_TEXT + '</div></label>' +
       '<input id="mem-hp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<button class="btn" id="mem-send" type="submit">שליחה</button>' +
@@ -22,15 +22,20 @@
     form.onsubmit = function (e) {
       e.preventDefault();
       const text = document.getElementById('mem-text').value.trim();
-      if (!text || document.getElementById('mem-hp').value) return;
+      const name = document.getElementById('mem-name').value.trim();
+      if (!name || !text || document.getElementById('mem-hp').value) return;
       const body = new URLSearchParams();
-      if (C.FIELD_NAME) body.set(C.FIELD_NAME, document.getElementById('mem-name').value.trim());
+      if (C.FIELD_NAME) body.set(C.FIELD_NAME, name);
       body.set(C.FIELD_TEXT, text);
       const btn = document.getElementById('mem-send');
       btn.disabled = true;
       // no-cors: the response is opaque, so success can't be confirmed from here
       fetch(C.FORM_URL, { method: 'POST', mode: 'no-cors', body: body })
         .then(function () {
+          // Keep my own decisions in this browser, for the summary page
+          const mine = Store.get('decisions') || [];
+          mine.push({ name: name, text: text });
+          Store.set('decisions', mine);
           root.innerHTML = '<div class="card" style="text-align:center"><h2>תודה ❤️</h2>' +
             '<p class="lead">ההחלטה נשמרה. היא תופיע בעמוד ההחלטות בקרוב.</p>' +
             '<div class="btn-row"><a class="btn" href="memories.html">לעמוד ההחלטות</a>' +

@@ -1,6 +1,8 @@
 (function () {
   const Q = window.QUIZ;
   const root = document.getElementById('quiz');
+  // One save slot per quiz page (quiz.html, know-place.html, trail-markers.html)
+  const KEY = 'quiz:' + (location.pathname.split('/').pop() || 'quiz.html');
   let i = 0, score = 0, answered = false;
 
   function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
@@ -17,12 +19,15 @@
   function start() {
     i = 0; score = 0;
     root.innerHTML = '<div class="card" style="text-align:center"><p class="lead">' + esc(Q.intro) +
-      '</p><button class="btn" id="go">מתחילים</button></div>';
+      '</p><button class="btn" id="go">מתחילים</button>' + Store.startExtras(KEY, Q.questions.length, Q.questions.length) + '</div>';
     document.getElementById('go').onclick = show;
+    const r = document.getElementById('resume');
+    if (r) r.onclick = () => { const p = Store.progress(KEY, Q.questions.length); i = p.i; score = p.score; show(); };
   }
 
   function show() {
     answered = false;
+    Store.set(KEY, { i: i, score: score });
     const q = Q.questions[i];
     root.innerHTML = '<div class="card">' +
       '<div class="stats"><span>שאלה ' + (i + 1) + ' מתוך ' + Q.questions.length + '</span><span>נכונות: ' + score + '</span></div>' +
@@ -58,9 +63,10 @@
     const pct = (score / Q.questions.length) * 100;
     let end = Q.endings[0];
     Q.endings.forEach(e => { if (pct >= e.min) end = e; });
+    const best = Store.finish(KEY, score);
     root.innerHTML = '<div class="card" style="text-align:center"><h2>סיימתם!</h2>' +
       '<p style="font-size:2.4rem;margin:0">❤️</p>' +
-      '<p>ענית נכון על <strong>' + score + ' מתוך ' + Q.questions.length + '</strong></p>' +
+      '<p>ענית נכון על <strong>' + score + ' מתוך ' + Q.questions.length + '</strong> · שיא: ' + best + '</p>' +
       '<p class="lead">' + esc(end.text) + '</p><button class="btn" id="again">שוב</button></div>';
     document.getElementById('again').onclick = start;
   }

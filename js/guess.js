@@ -22,12 +22,15 @@
   function start() {
     idx = 0; score = 0;
     root.innerHTML = '<div class="card" style="text-align:center"><h2>נחשו את המקום</h2><p class="lead">' + esc(G.intro) +
-      '</p><button class="btn" id="go">מתחילים</button></div>';
+      '</p><button class="btn" id="go">מתחילים</button>' + Store.startExtras('guess', G.places.length, maxScore) + '</div>';
     document.getElementById('go').onclick = show;
+    const r = document.getElementById('resume');
+    if (r) r.onclick = () => { const p = Store.progress('guess', G.places.length); idx = p.i; score = p.score; show(); };
   }
 
   function show() {
     answered = false; hintsUsed = 0;
+    Store.set('guess', { i: idx, score: score });
     const p = G.places[idx];
     const pct = (idx / G.places.length) * 100;
     root.innerHTML = '<div class="game-layout"><div class="map-wrap"><svg id="gmap" viewBox="0 0 ' + M.W + ' ' + M.H +
@@ -112,9 +115,10 @@
     const pct = (score / maxScore) * 100;
     let end = G.endings[0];
     G.endings.forEach(e => { if (pct >= e.min) end = e; });
+    const best = Store.finish('guess', score);
     root.innerHTML = '<div class="card" style="text-align:center"><h2>סיימתם!</h2>' +
       '<p style="font-size:2.4rem;margin:0">📍</p><h2>' + esc(end.title) + '</h2><p class="lead">' + esc(end.text) +
-      '</p><p>ניקוד: <strong>' + score + ' מתוך ' + maxScore + '</strong></p><button class="btn" id="again">שוב</button></div>';
+      '</p><p>ניקוד: <strong>' + score + ' מתוך ' + maxScore + '</strong> · שיא: ' + best + '</p><button class="btn" id="again">שוב</button></div>';
     document.getElementById('again').onclick = start;
   }
 

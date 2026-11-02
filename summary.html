@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>סיכום המשחק</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main>
+    <h1>סוף המשחק</h1>
+    <div class="card" style="text-align:center">
+      <p class="lead">הגענו לסוף המשחק, וסוף השביל.</p>
+      <p>הלכנו יחד בין תחנות ושבילים, שיחקנו, נזכרנו וסיפרנו.</p>
+      <p>מקווים שבדרך למדתם דבר או שניים, שהחכמתם, ושהרגשתם קצת יותר קרובים לשגיא.<br>
+      שהצחוק שלו, האהבה שלו לארץ ולאנשים, והטוב שבו ימשיכו ללוות אתכם.</p>
+      <p><strong>ושתמשיכו ללכת בדרכו, בשבילים ובחיים.</strong></p>
+    </div>
+    <h2 style="margin-top:28px">ההחלטות הטובות שלקחתם</h2>
+    <div id="decisions"></div>
+    <h2 style="margin-top:28px">סיכום הפעילויות שלכם</h2>
+    <div id="recap" class="cards-grid"></div>
+    <div class="card" style="text-align:center;margin-top:28px">
+      <p class="lead">תודה שהייתם איתנו היום.</p>
+      <p>קחו איתכם את ההחלטה הטובה שלקחתם, ותנו לה להמשיך אחרי שהשביל נגמר.</p>
+      <p>יהי זכרו ברוך.</p>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="js/site.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/markers.js"></script>
+  <script src="data/game-data.js"></script>
+  <script>var MAX = { 'game': GAME.stops.length * 10 };</script>
+  <script src="data/guess-data.js"></script>
+  <script>MAX['guess'] = GUESS.places.length * 10;</script>
+  <script src="data/quiz-data.js"></script>
+  <script>MAX['quiz:quiz.html'] = QUIZ.questions.length;</script>
+  <script src="data/place-data.js"></script>
+  <script>MAX['quiz:know-place.html'] = QUIZ.questions.length;</script>
+  <script src="data/photo-hunt-data.js"></script>
+  <script>MAX['photohunt'] = PHOTO_HUNT.photos.length * 10;</script>
+  <script src="data/trail-data.js"></script>
+  <script>MAX['quiz:trail-markers.html'] = QUIZ.questions.length;</script>
+  <script>
+    (function () {
+      // Same keys the games save under (see js/store.js, js/quiz.js)
+      const ACTIVITIES = [
+        { key: 'game',                    file: 'game.html' },
+        { key: 'guess',                   file: 'guess.html' },
+        { key: 'photohunt',               file: 'photo-hunt.html' },
+        { key: 'quiz:trail-markers.html', file: 'trail-markers.html' },
+        { key: 'quiz:know-place.html',    file: 'know-place.html' },
+        { key: 'quiz:quiz.html',          file: 'quiz.html' },
+      ];
+      const byFile = {};
+      PAGES.forEach(function (p) { byFile[p.file] = p; });
+      document.getElementById('recap').innerHTML = ACTIVITIES.map(function (a) {
+        const p = byFile[a.file], best = Store.get(a.key + ':best');
+        const line = best === null ? 'עוד לא סיימתם - אפשר לנסות!' : 'השיא שלכם: ' + best + ' מתוך ' + MAX[a.key];
+        return '<a class="page-card" href="' + a.file + '"><div class="icon">' + p.icon + '</div><h3>' + p.title +
+          '</h3><p>' + line + '</p></a>';
+      }).join('');
+
+      const mine = Store.get('decisions') || [];
+      const box = document.getElementById('decisions');
+      if (!mine.length) {
+        box.innerHTML = '<div class="card" style="text-align:center"><p>עוד לא לקחתם החלטה טובה.</p>' +
+          '<a class="btn" href="memory-add.html">לקחת החלטה טובה</a></div>';
+      } else {
+        box.className = 'memories-wall';
+        mine.forEach(function (d) {
+          const card = document.createElement('div');
+          card.className = 'card memory-card';
+          const p = document.createElement('p');
+          p.textContent = d.text;
+          card.appendChild(p);
+          box.appendChild(card);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

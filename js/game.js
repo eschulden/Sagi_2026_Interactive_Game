@@ -33,12 +33,15 @@
   function start() {
     idx = 0; score = 0;
     root.innerHTML = '<div class="card" style="text-align:center"><h2>מוכנים לצאת לדרך?</h2><p class="lead">' + esc(G.intro) +
-      '</p><button class="btn" id="go">יוצאים!</button></div>';
+      '</p><button class="btn" id="go">יוצאים!</button>' + Store.startExtras('game', G.stops.length, maxScore) + '</div>';
     document.getElementById('go').onclick = showStop;
+    const r = document.getElementById('resume');
+    if (r) r.onclick = () => { const p = Store.progress('game', G.stops.length); idx = p.i; score = p.score; showStop(); };
   }
 
   function showStop() {
     answered = false;
+    Store.set('game', { i: idx, score: score });
     const s = G.stops[idx];
     const pct = (idx / G.stops.length) * 100;
     layout(
@@ -84,9 +87,10 @@
     let end = G.endings[0];
     const pct = (score / maxScore) * 100;
     G.endings.forEach(e => { if (pct >= e.min) end = e; });
+    const best = Store.finish('game', score);
     root.innerHTML = '<div class="card" style="text-align:center"><h2>המסע הסתיים</h2>' +
       '<p style="font-size:2.4rem;margin:0">🏁</p><h2>' + esc(end.title) + '</h2>' +
-      '<p class="lead">' + esc(end.text) + '</p><p>ניקוד: <strong>' + score + ' מתוך ' + maxScore + '</strong></p>' +
+      '<p class="lead">' + esc(end.text) + '</p><p>ניקוד: <strong>' + score + ' מתוך ' + maxScore + '</strong> · שיא: ' + best + '</p>' +
       '<button class="btn" id="again">לצאת למסע חדש</button></div>';
     document.getElementById('again').onclick = start;
   }
