@@ -31,10 +31,8 @@
   <script src="js/site.js"></script>
   <script src="js/store.js"></script>
   <script src="js/markers.js"></script>
-  <script src="data/game-data.js"></script>
-  <script>var MAX = { 'game': GAME.stops.length * 10 };</script>
   <script src="data/guess-data.js"></script>
-  <script>MAX['guess'] = GUESS.places.length * 10;</script>
+  <script>var MAX = { 'guess': GUESS.places.length * 10 };</script>
   <script src="data/quiz-data.js"></script>
   <script>MAX['quiz:quiz.html'] = QUIZ.questions.length;</script>
   <script src="data/place-data.js"></script>
@@ -47,7 +45,6 @@
     (function () {
       // Same keys the games save under (see js/store.js, js/quiz.js)
       const ACTIVITIES = [
-        { key: 'game',                    file: 'game.html' },
         { key: 'guess',                   file: 'guess.html' },
         { key: 'photohunt',               file: 'photo-gallery.html' },
         { key: 'quiz:trail-markers.html', file: 'trail-markers.html' },

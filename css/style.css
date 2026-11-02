@@ -198,11 +198,6 @@ h2 { font-size: 1.4rem; }
 .lake { fill: #bfe1ee; stroke: #8fbfd2; stroke-width: .8; }
 .sea-label { font-size: 9px; font-style: italic; fill: #3f7893; direction: ltr; paint-order: stroke; stroke: #fff; stroke-width: 2.5px; stroke-opacity: .8; }
 .route { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 4; }
-.pin circle { fill: #fff; stroke: #9a8f80; stroke-width: 2; transition: all .3s; }
-.pin.done circle { fill: var(--good); stroke: var(--good); }
-.pin.current circle { fill: var(--accent); stroke: var(--accent-dark); }
-.pin text { font-size: 11px; fill: var(--ink); font-weight: 700; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
-.traveler { transition: transform .9s ease-in-out; font-size: 20px; }
 
 @media (max-width: 720px) {
   body { font-size: 17px; }

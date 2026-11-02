@@ -4,7 +4,7 @@
  * TWO MODES:
  *   Hub mode (default): full navigation shown on all pages.
  *   QR / standalone mode: no nav, for QR codes placed on the trail.
- *     Append ?hidden to any URL to suppress the nav (e.g. game.html?hidden).
+ *     Append ?hidden to any URL to suppress the nav (e.g. guess.html?hidden).
  *
  * To add a new page:
  *   1. Copy page-template.html to a new file (e.g. photos.html)
@@ -17,10 +17,9 @@ const PAGES = [
   { file: 'main.html',          title: 'בית',                      icon: '🏠' },
   { file: 'about.html',         title: 'על המשחק',                 icon: 'ℹ️', desc: 'הסבר על בשביל שגיא וקודי ה-QR לאורך המסלול.' },
   { file: 'sagi.html',          title: 'על שגיא',                  icon: '🌿', desc: 'קצת על שגיא - מי הוא היה, מה אהב, ומה נזכור ממנו.' },
-  { file: 'game.html',          title: 'מסע בישראל',               icon: '🗺️', desc: 'משחק מסע בין אתרים בארץ - נסו להגיע לכל התחנות.' },
   { file: 'guess.html',         title: 'נחשו את המקום',            icon: '📍', desc: 'רמז על מקום בארץ - סמנו על המפה איפה הוא.' },
   { file: 'trail-markers.html', title: 'סימוני שבילים',            icon: '🥾', desc: 'חידון על סימוני שבילים וכללי הליכה בשטח.' },
-  { file: 'photo-gallery.html', title: 'כל התמונות',              icon: '🖼️', desc: 'כל התמונות של "איפה צילמתי?" - ירוק למה שמצאתם, אדום למה שוויתרתם.' },
+  { file: 'photo-gallery.html', title: 'איפה צילמתי?',            icon: '📸', desc: 'מצאו את המקום שבו צולמה כל תמונה - ירוק למה שמצאתם, אדום למה שוויתרתם.' },
   { file: 'know-place.html',    title: 'הכר את המקום',             icon: '🌳', desc: 'חידון על נחל השופט - המקום שבו אתם מטיילים עכשיו.' },
   { file: 'quiz.html',         title: 'כמה אתם מכירים את שגיא?', icon: '❓', desc: 'שאלות על שגיא - הוכיחו שאתם באמת מכירים אותו.' },
   { file: 'memory-add.html',    title: 'קחו החלטה טובה',           icon: '✍️', desc: 'כתבו החלטה טובה שאתם לוקחים לעצמכם, והיא תישמר.' },
