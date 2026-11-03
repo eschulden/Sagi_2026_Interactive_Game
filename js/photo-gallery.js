@@ -1,4 +1,4 @@
-// All "איפה צילמתי?" photos; each opens photo-hunt.html?photo=N. Green = found, red = gave up.
+// All "איפה צילמתי?" photos; each opens photo-hunt.html?photo=N. Colored by the last "אני כאן": green = exact, yellow = close, red = far.
 (function () {
   const H = window.PHOTO_HUNT;
   const root = document.getElementById('photo-gallery');
@@ -13,8 +13,9 @@
       const pts = results[p.image];
       let cls = '', label = 'עוד לא ניסיתם';
       if (typeof pts === 'number') {
-        if (pts > 0) { found++; cls = ' found'; label = '✅ נמצאה · ' + pts + ' נקודות'; }
-        else { cls = ' missed'; label = '❌ לא נמצאה'; }
+        if (pts === 10) { found++; cls = ' found'; label = '✅ נמצאה · 10 נקודות'; }
+        else if (pts > 0) { cls = ' near'; label = '🟡 קרוב · ' + pts + ' נקודות'; }
+        else { cls = ' missed'; label = '🔴 רחוק'; }
       }
       return '<a class="photo-tile' + cls + '" href="photo-hunt.html?photo=' + (i + 1) + hidden + '">' +
         '<img src="' + esc(p.image) + '" alt="תמונה ' + (i + 1) + '" loading="lazy">' +

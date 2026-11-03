@@ -264,7 +264,7 @@ a.btn { display: inline-block; text-decoration: none; }
   .memories-wall { column-width: auto; column-count: 1; }
 }
 
-/* Photo hunt gallery: green = found, red = gave up */
+/* Photo hunt gallery, by the last "אני כאן": green = exact, yellow = close, red = far */
 .photo-count { text-align: center; color: var(--muted); margin: 0 0 16px; }
 .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
 .photo-tile {
@@ -279,9 +279,19 @@ a.btn { display: inline-block; text-decoration: none; }
 .photo-tile.found .photo-tile-label { background: #e8f6ee; color: var(--good); }
 .photo-tile.missed { border-color: var(--bad); }
 .photo-tile.missed .photo-tile-label { background: #fbeceb; color: var(--bad); }
+.photo-tile.near { border-color: #d9a400; }
+.photo-tile.near .photo-tile-label { background: #fff6d6; color: #8a6800; }
+/* "חזרה" back button; RTL, so it sits on the right with a right-pointing arrow */
+.back-link {
+  display: inline-flex; align-items: center; gap: 6px; background: #fff; color: var(--accent-dark);
+  border: 2px solid var(--accent); font-weight: 700; text-decoration: none; padding: 5px 14px 5px 16px; border-radius: 99px;
+}
+.back-link .arrow { font-size: 1.2rem; line-height: 1; }
+.back-link:hover { background: var(--accent); color: #fff; }
+.stats:has(.back-link) { align-items: center; margin-bottom: 12px; }
 @media (max-width: 420px) { .photo-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
 
-/* Photo hunt results: green = found, yellow = getting close, red = far / gave up */
+/* Photo hunt results: green = exact, yellow = close, red = far */
 .feedback .result-title { display: block; font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
 .feedback.found { background: #e8f6ee; border-right: 5px solid var(--good); }
 .feedback.near { background: #fff6d6; border-right: 5px solid #d9a400; }

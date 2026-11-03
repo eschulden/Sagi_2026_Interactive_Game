@@ -10,7 +10,8 @@
   const single = pick && +pick[1] >= 1 && +pick[1] <= H.photos.length ? +pick[1] - 1 : null;
   const gallery = 'photo-gallery.html' + (location.search.indexOf('hidden') !== -1 ? '?hidden' : '');
 
-  // Last result per photo, keyed by image path: points (0 = gave up). The gallery colors tiles by it.
+  // Result of the last "אני כאן" per photo, keyed by image path: 10 = exact (green), 5 = close (yellow),
+  // 0 = far (red). The gallery colors tiles by it.
   // photohunt:best holds the current total, for summary.html.
   function saveResult(pts) {
     const r = Store.get('photohunt:results') || {};
@@ -106,17 +107,17 @@
   function show() {
     tries = 0; lastM = null; busy = false;
     const p = H.photos[idx];
-    root.innerHTML = '<div class="card"><div class="stats"><span>תמונה ' + (idx + 1) + ' מתוך ' + H.photos.length +
-      '</span><a href="' + gallery + '">כל התמונות</a></div>' +
+    // A photo found at the exact spot is done: no more "אני כאן" for it
+    if ((Store.get('photohunt:results') || {})[p.image] === 10) return reveal(null);
+    root.innerHTML = '<div class="card"><div class="stats"><a class="back-link" href="' + gallery + '"><span class="arrow">→</span>חזרה</a>' +
+      '<span>תמונה ' + (idx + 1) + ' מתוך ' + H.photos.length + '</span></div>' +
       '<img src="' + esc(p.image) + '" alt="התמונה שצריך למצוא" style="width:100%;border-radius:12px;margin-bottom:12px">' +
       (p.hint ? '<p><strong>רמז:</strong> ' + esc(p.hint) + '</p>' : '') +
       '<p class="lead">עמדו בדיוק במקום שממנו צולמה התמונה, ולחצו על הכפתור.</p>' +
       '<p id="gps" style="color:var(--muted)">⚪ מחפשים את המיקום שלכם...</p>' +
       '<div id="status"></div>' +
-      '<p><button class="btn" id="here">📍 אני כאן</button></p>' +
-      '<p><button class="btn secondary" id="skip">מוותרים על התמונה הזו</button></p></div>';
+      '<p><button class="btn" id="here">📍 אני כאן</button></p></div>';
     document.getElementById('here').onclick = check;
-    document.getElementById('skip').onclick = () => reveal(0, null);
     startLive();
   }
 
@@ -138,12 +139,13 @@
       // Give the player the benefit of GPS error, but cap it so a vague fix can't win on its own
       const m = Math.max(0, raw - Math.min(c.accuracy, 15));
       const pts = pointsFor(m);
-      if (pts === 10) return reveal(pts, raw);
+      saveResult(pts);
+      if (pts === 10) return reveal(raw);
       tries++;
       const d = '<strong>' + dist(raw) + '</strong>';
       const [cls, title, line] =
-        pts ? ['near', '🟡 ממש קרוב!', 'אתם בערך ' + d + ' מהמקום.'] :
-        raw <= 200 ? ['near', '🟡 אתם מתקרבים', 'נשארו בערך ' + d + ' עד המקום.'] :
+        pts ? ['near', '🟡 ממש קרוב!', 'אתם בערך ' + d + ' מהמקום. התמונה סומנה בצהוב ושווה ' + pts + ' נקודות - התקרבו עוד קצת כדי לקבל 10.'] :
+        raw <= 200 ? ['far', '🔴 אתם מתקרבים', 'נשארו בערך ' + d + ' עד המקום.'] :
         raw <= 1000 ? ['far', '🔴 אתם רחוקים', 'אתם בערך ' + d + ' מהמקום.'] :
         ['far', '🔴 אתם רחוקים מאוד', 'אתם בערך ' + d + ' מהמקום. הסתכלו שוב בתמונה וחפשו רמזים.'];
       const lines = [line];
@@ -155,11 +157,7 @@
       lastM = raw;
       if (tries >= 2) lines.push('🧭 המקום נמצא ל<strong>' + direction(c.latitude, c.longitude, p.lat, p.lon) + '</strong> מכם.');
       if (c.accuracy > POOR_ACC_M) lines.push('⚠️ הקליטה חלשה כרגע, אז המרחק יכול לטעות בעד ' + Math.round(c.accuracy) + ' מטר. נסו שוב בעוד רגע, במקום פתוח יותר.');
-      status(box(cls, title, lines) +
-        (pts ? '<p>אפשר לקחת ' + pts + ' נקודות עכשיו, או להתקרב עוד קצת ולנסות לקבל 10.</p>' +
-               '<p><button class="btn secondary" id="take">לקחת ' + pts + ' נקודות</button></p>' : ''));
-      const take = document.getElementById('take');
-      if (take) take.onclick = () => reveal(pts, raw);
+      status(box(cls, title, lines));
     }).catch(function (err) {
       busy = false;
       btn.disabled = false; btn.textContent = '📍 אני כאן';
@@ -167,18 +165,15 @@
     });
   }
 
-  function reveal(pts, m) {
+  // Shown once the player stands at the exact spot, and on any later visit (m = null)
+  function reveal(m) {
     stopLive();
-    saveResult(pts);
     const p = H.photos[idx];
-    const result =
-      pts === 10 ? box('found', '🎯 מצאתם את המקום!', [m < 5 ? 'עמדתם בדיוק במקום שבו צילמתי.' : 'הייתם רק ' + dist(m) + ' מהנקודה שבה צילמתי.', 'קיבלתם <strong>10 נקודות</strong>.']) :
-      pts ? box('found', '👍 כמעט בול!', ['הייתם בערך ' + dist(m) + ' מהנקודה שבה צילמתי.', 'קיבלתם <strong>' + pts + ' נקודות</strong>.']) :
-      box('far', '🤷 התמונה הזו נשארה בגדר תעלומה', ['לא נורא - אפשר לנסות אותה שוב מתוך כל התמונות.']);
+    const where = m === null ? 'כבר מצאתם את המקום שבו צילמתי את התמונה הזו.' :
+      m < 5 ? 'עמדתם בדיוק במקום שבו צילמתי.' : 'הייתם רק ' + dist(m) + ' מהנקודה שבה צילמתי.';
     root.innerHTML = '<div class="card"><img src="' + esc(p.image) + '" alt="" style="width:100%;border-radius:12px;margin-bottom:12px">' +
-      result +
+      box('found', '🎯 מצאתם את המקום!', [where, 'קיבלתם <strong>10 נקודות</strong>.']) +
       (p.fact ? '<div class="memory">' + esc(p.fact) + '</div>' : '') +
-      (pts ? '' : '<p><a href="https://www.google.com/maps/search/?api=1&query=' + p.lat + ',' + p.lon + '" target="_blank" rel="noopener">איפה זה היה? פתחו במפה</a></p>') +
       '<a class="btn" href="' + gallery + '">חזרה לכל התמונות</a></div>';
   }
 
