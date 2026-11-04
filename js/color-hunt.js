@@ -321,8 +321,11 @@
       '<span>צבע ' + (i + 1) + ' מתוך ' + C.colors.length + '</span></div>' +
       '<div class="color-banner" style="background:' + SWATCH[c.color] + '"></div>' +
       '<h2>צלמו משהו ' + name + '</h2>';
-    const picker = text => '<p><label class="btn' + (res ? ' secondary' : '') + '" id="pick">' +
-      '<input type="file" accept="image/*" id="file" multiple hidden>' + text + '</label></p>';
+    // Two buttons, since one picker on a phone asks "camera or files?" and a choice of files can't
+    // switch back to the camera. capture opens the camera straight away (one photo); the gallery takes several.
+    const picker = (camera, gallery) => '<div class="btn-row">' +
+      '<label class="btn' + (res ? ' secondary' : '') + '"><input type="file" accept="image/*" capture="environment" hidden>' + camera + '</label>' +
+      '<label class="btn secondary"><input type="file" accept="image/*" multiple hidden>' + gallery + '</label></div>';
     const statusDiv = '<div id="status">' + (status || '') + '</div>' +
       (C.UPLOAD_URL ? '<p class="photo-count">תמונות שמתקבלות נשמרות גם בתיקייה משותפת, וכל הקבוצות יכולות לראות אותן.</p>' : '');
     if (res) {
@@ -335,20 +338,19 @@
         '<p class="photo-count">' + (n > 1 ? n + ' תמונות ' + name : 'התמונה שצילמתם') + '</p>' +
         '<div class="color-gallery' + (n === 1 ? ' single' : '') + '">' + photos + '</div>' +
         (n >= MAX_PHOTOS ? '<p class="photo-count">הגעתם למקסימום של ' + MAX_PHOTOS + ' תמונות לצבע. כדי להוסיף, מחקו קודם תמונה.</p>' :
-          picker('➕ להוסיף עוד תמונות')) + statusDiv +
+          picker('📷 לצלם עוד', '🖼️ להוסיף מהגלריה')) + statusDiv +
         '<a class="btn" href="#">חזרה לכל הצבעים</a></div>';
     } else {
       root.innerHTML = head +
         (c.hint ? '<p><strong>רעיון:</strong> ' + esc(c.hint) + '</p>' : '') +
         '<p class="lead">הצבע צריך למלא חלק גדול מהתמונה, או להופיע בה כדבר אחד בולט - למשל פרח ' + name + ' בתוך שיח.</p>' +
-        '<p>אפשר לבחור כמה תמונות בבת אחת.</p>' +
-        picker('📷 צלמו או בחרו תמונות') + statusDiv + '</div>';
+        '<p>אפשר לצלם עכשיו, או לבחור מהגלריה כמה תמונות בבת אחת.</p>' +
+        picker('📷 לצלם', '🖼️ לבחור מהגלריה') + statusDiv + '</div>';
     }
-    const file = document.getElementById('file');
-    if (file) file.onchange = function () {
-      if (this.files.length) check(i, Array.from(this.files));
+    root.querySelectorAll('input[type=file]').forEach(input => input.onchange = function () {
+      if (this.files.length) check(i, Array.from(this.files), this.parentNode);
       this.value = '';  // picking the same file again should still fire
-    };
+    });
     // ✕ asks on the photo itself, with a small "delete / cancel" over it, instead of a browser pop-up
     root.querySelectorAll('[data-remove]').forEach(b => b.onclick = function () {
       const fig = b.parentNode;
@@ -391,9 +393,10 @@
   }
 
   // Checks each photo in turn: the ones that pass are added to the color, the rest are shown with the reason
-  async function check(i, files) {
+  // button: the label that was tapped, which shows the progress
+  async function check(i, files, button) {
     const color = C.colors[i].color, name = NAMES[color], res = results()[color];
-    const label = document.getElementById('pick').lastChild;
+    const label = button.lastChild;
     const room = MAX_PHOTOS - (res ? res.photos.length : 0);
     const passed = [], failed = [];
     let broken = 0, extra = 0, share = 0;
