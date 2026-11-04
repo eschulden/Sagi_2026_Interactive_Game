@@ -19,7 +19,8 @@ const PAGES = [
   { file: 'sagi.html',          title: 'על שגיא',                  icon: '🌿', desc: 'קצת על שגיא - מי הוא היה, מה אהב, ומה נזכור ממנו.' },
   { file: 'guess.html',         title: 'נחשו את המקום',            icon: '📍', desc: 'רמז על מקום בארץ - סמנו על המפה איפה הוא.' },
   { file: 'trail-markers.html', title: 'סימוני שבילים',            icon: '🥾', desc: 'חידון על סימוני שבילים וכללי הליכה בשטח.' },
-  { file: 'photo-gallery.html', title: 'איפה צילמתי?',            icon: '📸', desc: 'מצאו את המקום שבו צולמה כל תמונה - ירוק למה שמצאתם, אדום למה שוויתרתם.' },
+  { file: 'photo-gallery.html', title: 'איפה צילמתי?',            icon: '📸', desc: 'מצאו את המקום המדויק שבו צולמה כל תמונה - ירוק כשאתם בדיוק שם, צהוב כשאתם קרובים.' },
+  { file: 'color-hunt.html',    title: 'ציד צבעים',                icon: '🎨', desc: 'צלמו בשביל משהו בכל צבע - האתר בודק שהצבע באמת בתמונה.' },
   { file: 'know-place.html',    title: 'הכר את המקום',             icon: '🌳', desc: 'חידון על נחל השופט - המקום שבו אתם מטיילים עכשיו.' },
   { file: 'quiz.html',         title: 'כמה אתם מכירים את שגיא?', icon: '❓', desc: 'שאלות על שגיא - הוכיחו שאתם באמת מכירים אותו.' },
   { file: 'memory-add.html',    title: 'קחו החלטה טובה',           icon: '✍️', desc: 'כתבו החלטה טובה שאתם לוקחים לעצמכם, והיא תישמר.' },
@@ -28,7 +29,33 @@ const PAGES = [
   // { file: 'photos.html', title: 'תמונות', icon: '📷', desc: 'אלבום תמונות.' },
 ];
 
+// Group name chosen on login.html; kept in this browser and shown by every page and game.
+window.Group = (function () {
+  const KEY = 'sagi2026:group';
+  function get() { try { return JSON.parse(localStorage.getItem(KEY)) || ''; } catch (e) { return ''; } }
+  function set(name) { try { localStorage.setItem(KEY, JSON.stringify(name)); } catch (e) {} }
+  // Group name escaped for innerHTML
+  function html() { return get().replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  // End-of-game title: "כל הכבוד, <group>!"
+  function cheer() { return get() ? 'כל הכבוד, ' + html() + '!' : 'סיימתם!'; }
+  return { get: get, set: set, html: html, cheer: cheer };
+})();
+
+// Pages that open without a group name (info pages, and the login page itself)
+const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
+
 (function () {
+  // No group yet: go to login first, then come back here. If storage is blocked the
+  // name can't be kept anyway, so don't trap the visitor in a login loop.
+  const page = location.pathname.split('/').pop() || 'index.html';
+  let canStore = true;
+  try { localStorage.setItem('sagi2026:probe', '1'); localStorage.removeItem('sagi2026:probe'); } catch (e) { canStore = false; }
+  if (canStore && !Group.get() && NO_LOGIN.indexOf(page) === -1) {
+    const hidden = location.search.indexOf('hidden') !== -1 ? 'hidden&' : '';
+    location.replace('login.html?' + hidden + 'next=' + encodeURIComponent(page + location.search + location.hash));
+    return;
+  }
+
   const icon = document.createElement('link');
   icon.rel = 'icon'; icon.href = 'images/logo.webp';
   document.head.appendChild(icon);
@@ -55,6 +82,17 @@ const PAGES = [
   // Links stay bare — nav is on by default, no need to propagate a param
   const href = f => f;
 
+  // "Group: X" chip in the header; tapping it opens login.html to rename the group
+  const group = Group.get();
+  const groupChip = !group || current === 'login.html' ? '' : (function () {
+    const a = document.createElement('a');
+    a.className = 'group-chip';
+    a.href = 'login.html?' + (hubMode ? '' : 'hidden&') + 'next=' + encodeURIComponent(current + location.search);
+    a.title = 'שינוי שם הקבוצה';
+    a.textContent = '👥 ' + group;
+    return a.outerHTML;
+  })();
+
   const header = document.getElementById('site-header');
   if (header) {
     if (hubMode) {
@@ -67,6 +105,7 @@ const PAGES = [
         '<div class="inner">' +
           '<a class="site-title" href="main.html"><img src="images/logo.webp" alt="' + SITE_TITLE + '"></a>' +
           '<nav class="site-nav" id="site-nav">' + navLinks + '</nav>' +
+          groupChip +
           '<button class="hamburger" id="hamburger" aria-label="תפריט" aria-expanded="false">&#9776;</button>' +
         '</div>' +
         '<div class="nav-drawer" id="nav-drawer">' + navLinks + '</div>' +
@@ -96,7 +135,7 @@ const PAGES = [
       // QR / standalone mode: show only the logo, no links
       header.className = 'site-header site-header--standalone';
       header.innerHTML =
-        '<div class="inner"><span class="site-title"><img src="images/logo.webp" alt="' + SITE_TITLE + '"></span></div>';
+        '<div class="inner"><span class="site-title"><img src="images/logo.webp" alt="' + SITE_TITLE + '"></span>' + groupChip + '</div>';
     }
   }
 

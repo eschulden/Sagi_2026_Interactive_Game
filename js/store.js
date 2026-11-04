@@ -5,8 +5,9 @@ window.Store = (function () {
   function get(key) {
     try { return JSON.parse(localStorage.getItem(P + key)); } catch (e) { return null; }
   }
+  // Returns false if the value could not be saved (storage blocked or full)
   function set(key, val) {
-    try { localStorage.setItem(P + key, JSON.stringify(val)); } catch (e) {}
+    try { localStorage.setItem(P + key, JSON.stringify(val)); return true; } catch (e) { return false; }
   }
   function del(key) {
     try { localStorage.removeItem(P + key); } catch (e) {}

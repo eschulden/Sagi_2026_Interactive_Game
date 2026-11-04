@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>כניסה - בשביל שגיא</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main>
+    <section class="login">
+      <img class="logo" src="images/logo.webp" alt="בשביל שגיא">
+      <h1 id="login-title">ברוכים הבאים לשביל שגיא</h1>
+      <p class="lead">לפני שיוצאים לדרך, בחרו שם לקבוצה שלכם. השם יופיע בכל המשחקים ובסיכום בסוף השביל.</p>
+      <form id="login-form" class="card">
+        <label for="group-name">שם הקבוצה</label>
+        <input id="group-name" maxlength="40" autocomplete="off" required placeholder="למשל: המטיילים של שגיא">
+        <p id="login-error" class="login-error" hidden></p>
+        <button class="btn" type="submit">יוצאים לדרך</button>
+      </form>
+    </section>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="js/site.js"></script>
+  <script>
+    (function () {
+      const input = document.getElementById('group-name');
+      const current = Group.get();
+      if (current) {
+        input.value = current;
+        document.getElementById('login-title').textContent = 'שינוי שם הקבוצה';
+      }
+      input.focus();
+      const error = document.getElementById('login-error');
+      input.oninput = function () { error.hidden = true; };
+
+      // Only same-site page names are allowed as the return target
+      const next = new URLSearchParams(location.search).get('next') || '';
+      const target = /^[\w-]+\.html([?#][^/\\]*)?$/.test(next) ? next : 'main.html';
+
+      document.getElementById('login-form').onsubmit = function (e) {
+        e.preventDefault();
+        const name = input.value.trim().replace(/\s+/g, ' ');
+        if (!name) return;
+        // The example name from the placeholder can't be used as a real group name
+        if (name.replace(/['"״׳]/g, '') === input.placeholder.replace(/^למשל:\s*/, '')) {
+          error.textContent = 'זה רק שם לדוגמה 🙂 בחרו שם משלכם.';
+          error.hidden = false;
+          input.focus();
+          return;
+        }
+        Group.set(name);
+        location.replace(target);
+      };
+    })();
+  </script>
+</body>
+</html>

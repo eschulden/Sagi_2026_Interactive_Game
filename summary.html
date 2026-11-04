@@ -9,7 +9,7 @@
 <body>
   <header id="site-header"></header>
   <main>
-    <h1>סוף המשחק</h1>
+    <h1 id="summary-title">סוף המשחק</h1>
     <div class="card" style="text-align:center">
       <p class="lead">הגענו לסוף המשחק, וסוף השביל.</p>
       <p>הלכנו יחד בין תחנות ושבילים, שיחקנו, נזכרנו וסיפרנו.</p>
@@ -39,14 +39,19 @@
   <script>MAX['quiz:know-place.html'] = QUIZ.questions.length;</script>
   <script src="data/photo-hunt-data.js"></script>
   <script>MAX['photohunt'] = PHOTO_HUNT.photos.length * 10;</script>
+  <script src="data/color-hunt-data.js"></script>
+  <script>MAX['colorhunt'] = COLOR_HUNT.colors.length * 10;</script>
   <script src="data/trail-data.js"></script>
   <script>MAX['quiz:trail-markers.html'] = QUIZ.questions.length;</script>
   <script>
     (function () {
+      if (Group.get()) document.getElementById('summary-title').textContent = 'סוף המשחק, ' + Group.get();
+
       // Same keys the games save under (see js/store.js, js/quiz.js)
       const ACTIVITIES = [
         { key: 'guess',                   file: 'guess.html' },
         { key: 'photohunt',               file: 'photo-gallery.html' },
+        { key: 'colorhunt',               file: 'color-hunt.html' },
         { key: 'quiz:trail-markers.html', file: 'trail-markers.html' },
         { key: 'quiz:know-place.html',    file: 'know-place.html' },
         { key: 'quiz:quiz.html',          file: 'quiz.html' },

@@ -59,6 +59,31 @@ a { color: var(--accent-dark); }
 .site-header--standalone .inner { justify-content: center; }
 .site-header--standalone .site-title img { height: 46px; }
 
+/* group name chip (opens login.html to rename) */
+.group-chip {
+  margin-right: auto;
+  max-width: 45vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  background: #eef1e0; color: var(--accent-dark);
+  border-radius: 999px; padding: 5px 14px;
+  font-size: .9rem; font-weight: 700; text-decoration: none;
+}
+.group-chip:hover { background: #e2e8c8; }
+.group-chip + .hamburger { margin-right: 0; }
+
+/* login page */
+.login { max-width: 460px; margin: 0 auto; text-align: center; }
+.login .logo { width: min(320px, 80%); height: auto; display: block; margin: 0 auto 6px; }
+.login form { text-align: right; padding: 24px; margin-top: 18px; }
+.login label { display: block; font-weight: 700; color: var(--accent-dark); }
+.login input {
+  display: block; width: 100%; margin: 8px 0 18px;
+  padding: 12px 14px; font: inherit; color: var(--ink);
+  border: 2px solid #eadfce; border-radius: 14px; background: #fffdf9;
+}
+.login input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(111, 131, 53, .15); }
+.login .btn { width: 100%; font-size: 1.1rem; }
+.login-error { margin: -8px 0 14px; color: var(--bad); font-size: .95rem; }
+
 /* hamburger button — hidden on desktop */
 .hamburger {
   display: none;
@@ -296,3 +321,45 @@ a.btn { display: inline-block; text-decoration: none; }
 .feedback.found { background: #e8f6ee; border-right: 5px solid var(--good); }
 .feedback.near { background: #fff6d6; border-right: 5px solid #d9a400; }
 .feedback.far { background: #fbeceb; border-right: 5px solid var(--bad); }
+
+/* Color hunt: a swatch stands in for the photo until the color is found */
+.color-swatch { display: block; width: 100%; aspect-ratio: 1; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); }
+.color-banner { height: 64px; border-radius: 12px; margin-bottom: 12px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); }
+/* Color hunt photos: a grid of every photo of one color; tap one to see it full screen */
+.photo-tile { position: relative; }
+.photo-count-badge {
+  position: absolute; top: 8px; left: 8px; background: rgba(0, 0, 0, .6); color: #fff;
+  font-size: .85rem; font-weight: 700; padding: 2px 8px; border-radius: 99px;
+}
+.color-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.color-gallery.single { grid-template-columns: 1fr; }
+.color-gallery figure { position: relative; margin: 0; }
+.color-gallery img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; cursor: zoom-in; }
+.color-gallery.single img { aspect-ratio: auto; }
+.color-gallery figcaption { font-size: .85rem; color: var(--muted); margin-top: 4px; }
+.photo-remove {
+  position: absolute; top: 6px; left: 6px; width: 30px; height: 30px; border: none; border-radius: 50%;
+  background: rgba(0, 0, 0, .6); color: #fff; font-size: 1rem; line-height: 1; cursor: pointer;
+}
+.photo-remove:hover { background: var(--bad); }
+.photo-viewer {
+  position: fixed; inset: 0; z-index: 1000; background: rgba(0, 0, 0, .88);
+  display: flex; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out;
+}
+.photo-viewer img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+.photo-pending {
+  position: absolute; bottom: 6px; right: 6px; background: rgba(0, 0, 0, .6); color: #fff;
+  font-size: .78rem; padding: 2px 8px; border-radius: 99px;
+}
+.color-gallery figcaption strong { color: var(--ink); }
+#color-others:not(:empty) { margin-top: 18px; }
+.photo-confirm {
+  position: absolute; inset: 0; border-radius: 12px; background: rgba(0, 0, 0, .65); color: #fff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px; text-align: center; font-size: .9rem; font-weight: 700;
+}
+.photo-confirm button {
+  border: none; border-radius: 99px; padding: 4px 12px; margin: 0 3px; font: inherit; font-size: .85rem; cursor: pointer;
+}
+.photo-confirm .yes { background: var(--bad); color: #fff; }
+.photo-confirm .no { background: #fff; color: var(--ink); }

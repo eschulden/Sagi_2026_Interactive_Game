@@ -16,6 +16,7 @@
       '<input id="mem-hp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<button class="btn" id="mem-send" type="submit">שליחה</button>' +
       '<div id="mem-msg" class="feedback" style="display:none"></div></form></div>';
+    document.getElementById('mem-name').value = Group.get().slice(0, C.MAX_NAME);
     const form = document.getElementById('mem-form');
     const ta = document.getElementById('mem-text');
     ta.oninput = function () { document.getElementById('mem-counter').textContent = ta.value.length + ' / ' + C.MAX_TEXT; };
