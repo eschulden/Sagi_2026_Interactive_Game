@@ -80,7 +80,7 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
       localStorage.setItem(VISITED_KEY, JSON.stringify(visited));
     }
   } catch (e) { visited = null; }
-  const ALWAYS_VISIBLE = ['main.html', 'sagi.html', 'progress.html'];
+  const ALWAYS_VISIBLE = ['main.html', 'about.html', 'sagi.html', 'progress.html'];
   const visible = PAGES.filter(p => ALWAYS_VISIBLE.indexOf(p.file) !== -1 || visited === null || visited.indexOf(p.file) !== -1);
 
   // Links stay bare — nav is on by default, no need to propagate a param
