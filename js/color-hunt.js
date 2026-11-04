@@ -398,7 +398,7 @@
     const color = C.colors[i].color, name = NAMES[color], res = results()[color];
     const label = button.lastChild;
     const room = MAX_PHOTOS - (res ? res.photos.length : 0);
-    const passed = [], failed = [];
+    const passed = [], failed = [], originals = [];
     let broken = 0, extra = 0, share = 0;
     for (let k = 0; k < files.length; k++) {
       label.textContent = files.length > 1 ? 'בודקים תמונה ' + (k + 1) + ' מתוך ' + files.length + '...' : 'בודקים את התמונה...';
@@ -410,13 +410,23 @@
       const p = newPhoto(thumbnail(img));
       if (C.UPLOAD_URL) big[p.id] = thumbnail(img, UPLOAD, 0.85);
       passed.push(p);
+      originals.push(files[k]);
       share = Math.max(share, r.share);
     }
     const msgs = [];
+    // A photo from the camera button isn't in the phone's gallery (a web page can't put it there),
+    // so offer to save it; gallery photos are there already
+    const fromCamera = !!button.querySelector('input[capture]');
+    let saveOffer = false;
     if (passed.length && !addPhotos(color, share, passed))
       msgs.push(box('far', '⚠️ אין מספיק מקום בטלפון', ['התמונות לא נשמרו. נסו למחוק תמונות מצבעים אחרים.']));
     else if (passed.length && files.length > 1)
       msgs.push(box('found', '✅ ' + (passed.length === 1 ? 'נוספה תמונה אחת' : 'נוספו ' + passed.length + ' תמונות'), []));
+    else if (passed.length && fromCamera) {
+      saveOffer = true;
+      msgs.push('<p><button class="btn secondary" id="save-to-phone">💾 לשמור את התמונה בטלפון</button></p>' +
+        (IOS ? '<p class="photo-count">בחלון שנפתח בחרו "שמירת תמונה".</p>' : ''));
+    }
     if (extra) msgs.push(box('far', '📦 ' + (extra === 1 ? 'תמונה אחת לא נוספה' : extra + ' תמונות לא נוספו'),
       ['אפשר לשמור עד ' + MAX_PHOTOS + ' תמונות לכל צבע.']));
     if (broken) msgs.push(box('far', '⚠️ לא הצלחנו לפתוח ' + (broken === 1 ? 'תמונה אחת' : broken + ' תמונות'),
@@ -432,7 +442,27 @@
           '</figcaption></figure>').join('') + '</div>');
     }
     detail(i, msgs.join(''));
+    if (saveOffer) document.getElementById('save-to-phone').onclick = () => saveToPhone(originals[0]);
     if (passed.length) sync();
+  }
+
+  // iPhone/iPad (iPadOS reports itself as a Mac with touch)
+  const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  // iPhone: the Share sheet, whose "Save Image" puts it in Photos.
+  // Elsewhere: a download, which Android's Gallery shows from the Downloads folder.
+  async function saveToPhone(file) {
+    if (IOS && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file] }); return; }
+      catch (e) { if (e.name === 'AbortError') return; }  // closed the sheet: nothing to do
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(file);
+    a.download = file.name || 'color-hunt.jpg';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
   }
 
   function route() {
