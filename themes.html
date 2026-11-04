@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<!--
+  תצוגה מקדימה של ערכות עיצוב (לבחירה בלבד, לא מקושר מהאתר).
+  URL: /themes.html
+-->
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>בשביל שגיא - ערכות עיצוב</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&family=Rubik:wght@400;600;800&family=Assistant:wght@400;700;800&family=Secular+One&family=Suez+One&family=Varela+Round&family=Frank+Ruhl+Libre:wght@400;700;900&family=Amatic+SC:wght@700&family=Karantina:wght@700&family=Bellefair&family=Fredoka:wght@400;600;700&family=Alef:wght@400;700&display=swap">
+<style>
+  body { margin: 0; background: #ececec; font-family: Heebo, Arial, sans-serif; color: #222; }
+  .page-head { text-align: center; padding: 28px 16px 8px; }
+  .page-head h1 { margin: 0 0 6px; font-size: 1.8rem; }
+  .page-head p { margin: 0 auto; max-width: 640px; color: #555; }
+  .toolbar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 14px 16px 4px; }
+  .toolbar button { font: inherit; border: 1px solid #bbb; background: #fff; border-radius: 99px; padding: 5px 14px; cursor: pointer; }
+  .toolbar button.on { background: #222; color: #fff; border-color: #222; }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 28px; padding: 20px 16px 60px; max-width: 1500px; margin: 0 auto; }
+  .gallery.single { grid-template-columns: minmax(0, 420px); justify-content: center; }
+  .slot { display: flex; flex-direction: column; gap: 8px; }
+  .slot-label { display: flex; align-items: baseline; gap: 8px; }
+  .slot-label .num { background: #222; color: #fff; border-radius: 99px; min-width: 28px; height: 28px; display: inline-grid; place-items: center; font-weight: 700; }
+  .slot-label b { font-size: 1.15rem; }
+  .slot-label small { color: #666; }
+  .slot-desc { margin: 0; color: #555; font-size: .92rem; min-height: 2.6em; }
+  .swatches { display: flex; gap: 4px; }
+  .swatches span { width: 22px; height: 22px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+
+  /* ---------- phone mock, every theme value comes from vars ---------- */
+  .phone {
+    border-radius: 26px; overflow: hidden; border: 8px solid #1d1d1f; box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    background: var(--bg); background-image: var(--bg-img, none); color: var(--ink);
+    font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  }
+  .phone h1, .phone h2, .phone h3, .phone .btn { font-family: var(--font-head); }
+  .m-header { background: var(--header-bg); box-shadow: 0 2px 10px rgba(0,0,0,.08); display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: var(--header-border, none); }
+  .m-header img { height: 34px; }
+  .m-chip { margin-right: auto; background: var(--soft); color: var(--accent-dark); border-radius: 99px; padding: 3px 12px; font-size: .8rem; font-weight: 700; }
+  .m-burger { font-size: 1.2rem; color: var(--header-ink, var(--ink)); }
+  .m-main { padding: 14px 14px 22px; }
+  .m-hero { text-align: center; padding: 6px 0 4px; }
+  .m-hero .logo-plate { display: inline-block; background: var(--logo-plate, transparent); border-radius: 18px; padding: var(--logo-pad, 0); }
+  .m-hero img { width: 230px; display: block; }
+  .m-hero h1 { margin: 6px 0 2px; font-size: var(--h1-size, 1.7rem); line-height: 1.2; color: var(--h-ink, var(--ink)); font-weight: var(--h-weight, 800); }
+  .m-hero p { margin: 0; color: var(--muted); }
+  .m-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+  .m-card {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px;
+    border: var(--card-border, none); border-top: var(--card-top, var(--card-border, none));
+  }
+  .m-card .icon { font-size: 1.6rem; }
+  .m-card h3 { margin: 2px 0; font-size: 1rem; color: var(--h-ink, var(--ink)); }
+  .m-card p { margin: 0; font-size: .8rem; color: var(--muted); line-height: 1.4; }
+  .m-quiz { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; border: var(--card-border, none); }
+  .m-stats { display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; }
+  .m-progress { height: 8px; background: var(--track); border-radius: 99px; overflow: hidden; margin: 4px 0 10px; }
+  .m-progress div { width: 60%; height: 100%; background: var(--accent); }
+  .m-quiz h2 { font-size: 1.1rem; margin: 0 0 8px; color: var(--h-ink, var(--ink)); }
+  .m-opt { background: var(--opt-bg, var(--card)); border: 2px solid var(--border); border-radius: calc(var(--radius) * .75); padding: 8px 12px; margin-bottom: 6px; font-size: .9rem; }
+  .m-opt.correct { border-color: var(--good); background: var(--good-soft); }
+  .m-opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .m-btns { display: flex; gap: 8px; margin-top: 12px; }
+  .btn {
+    flex: 1; text-align: center; background: var(--accent); color: var(--on-accent, #fff); border-radius: var(--btn-radius, 999px);
+    padding: 9px 10px; font-weight: 700; box-shadow: var(--btn-shadow, 0 3px 0 var(--accent-dark)); font-size: .95rem;
+  }
+  .btn.secondary { background: transparent; color: var(--accent-dark); border: 2px solid var(--accent); box-shadow: none; }
+  .m-memory {
+    position: relative; margin-top: 14px; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 20px 16px 12px; border-top: 4px solid var(--accent); border-inline: var(--card-border, none); border-bottom: var(--card-border, none);
+  }
+  .m-memory::before { content: '"'; position: absolute; top: 0; right: 12px; font: 700 2.8rem/1 Georgia, serif; color: var(--accent); opacity: .3; }
+  .m-memory p { margin: 0 0 8px; font-family: var(--font-quote, var(--font-body)); font-size: var(--quote-size, 1rem); }
+  .m-by { display: flex; justify-content: space-between; border-top: 1px dashed var(--border); padding-top: 6px; color: var(--accent-dark); font-weight: 700; font-size: .85rem; }
+  .m-by span { color: var(--muted); font-weight: 400; }
+  .m-footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 4px 0 14px; }
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>ערכות עיצוב לבשביל שגיא</h1>
+    <p>12 כיווני עיצוב, כל אחד מוצג כמו שייראה בטלפון. בחרו מספר (או שניים-שלושה שאהבתם) ואפשר גם לערבב: צבעים מאחד וגופן מאחר.</p>
+  </div>
+  <div class="toolbar" id="toolbar"></div>
+  <div class="gallery" id="gallery"></div>
+
+<script>
+const THEMES = [
+  { id: 'current', he: 'זית ושמנת', en: 'Olive & Cream (current)',
+    desc: 'העיצוב הנוכחי: רקע שמנת חם, ירוק זית מהלוגו. נקי ובטוח.',
+    v: { bg: '#fbf6ee', card: '#fff', ink: '#2b2a33', muted: '#6d6a77', accent: '#6f8335', 'accent-dark': '#3f4a1e', soft: '#eef1e0', border: '#e4d6c2', track: '#eadfce',
+         'header-bg': '#fff', radius: '16px', shadow: '0 4px 18px rgba(60,40,20,.12)', 'font-body': 'Heebo', 'font-head': 'Heebo' } },
+
+  { id: 'desert', he: 'זריחה במדבר', en: 'Desert Sunrise',
+    desc: 'חול, ענבר ושמש הלוגו. כפתורים כתומים-זהובים, כותרות Secular One עגולות.',
+    v: { bg: '#fdf3e1', 'bg-img': 'linear-gradient(180deg,#ffe7b8 0,#fdf3e1 220px)', card: '#fffaf1', ink: '#3b2a1a', muted: '#86705a', accent: '#e39a1f', 'accent-dark': '#9a5b0c', soft: '#fde8c2', border: '#efd8b3', track: '#f2dfc0',
+         'header-bg': '#fffaf1', radius: '18px', shadow: '0 4px 16px rgba(160,100,20,.15)', 'font-body': 'Assistant', 'font-head': 'Secular One', 'h-weight': 400 } },
+
+  { id: 'forest', he: 'יער הגליל', en: 'Galilee Forest',
+    desc: 'ירוק עמוק וטבעי עם כותרת עליונה ירוקה כהה. תחושה של צל עצים ושביל.',
+    v: { bg: '#eef3ea', card: '#fff', ink: '#1f2d1f', muted: '#5f705c', accent: '#2f6b3a', 'accent-dark': '#173d1f', soft: '#dcebd8', border: '#cfdcc9', track: '#d5e2d0',
+         'header-bg': '#f7faf5', 'header-border': '4px solid #2f6b3a', radius: '14px', shadow: '0 4px 14px rgba(20,60,20,.12)', 'font-body': 'Rubik', 'font-head': 'Rubik' } },
+
+  { id: 'sea', he: 'כנרת', en: 'Sea of Galilee',
+    desc: 'תכלת וטורקיז רגועים, רקע בהיר ומרווח. מרגיע ושקט.',
+    v: { bg: '#eef7f9', 'bg-img': 'linear-gradient(180deg,#d6eef4 0,#eef7f9 240px)', card: '#fff', ink: '#173440', muted: '#5b7a86', accent: '#2a8ca3', 'accent-dark': '#14596b', soft: '#d6eef4', border: '#cde3ea', track: '#d3e6ec',
+         'header-bg': '#fff', radius: '20px', shadow: '0 6px 20px rgba(20,90,110,.12)', 'font-body': 'Varela Round', 'font-head': 'Varela Round', 'h-weight': 400 } },
+
+  { id: 'sunset', he: 'שקיעה על השביל', en: 'Sunset Trail',
+    desc: 'טרקוטה, ורוד-אפרסק וחום אדמה. חם ומזמין, בהשראת שעת השקיעה.',
+    v: { bg: '#fbefe8', 'bg-img': 'linear-gradient(170deg,#fbd9c4 0,#fbefe8 260px)', card: '#fffaf7', ink: '#3a2420', muted: '#8a6a60', accent: '#c75b39', 'accent-dark': '#7c3220', soft: '#f8dccf', border: '#ecd2c4', track: '#f0d8cc',
+         'header-bg': '#fffaf7', radius: '16px', shadow: '0 4px 18px rgba(150,60,30,.14)', 'font-body': 'Heebo', 'font-head': 'Suez One', 'h-weight': 400 } },
+
+  { id: 'night', he: 'מסע לילה', en: 'Night Trail (dark)',
+    desc: 'מצב כהה: ירוק-לילה עם צהוב השמש של הלוגו. נוח בעיניים בערב, הלוגו על לוחית בהירה.',
+    v: { bg: '#141a14', 'bg-img': 'radial-gradient(circle at 80% 0,#2b3a22 0,#141a14 320px)', card: '#1f281e', ink: '#eef0e4', muted: '#a3ad96', accent: '#f0b43c', 'accent-dark': '#f0b43c', 'on-accent': '#1d1a10', soft: '#2f3a26', border: '#3a4733', track: '#2f3a28',
+         'header-bg': '#1a221a', 'header-ink': '#eef0e4', 'logo-plate': '#f5efdf', 'logo-pad': '6px 10px', radius: '16px', shadow: '0 4px 18px rgba(0,0,0,.4)', 'btn-shadow': '0 3px 0 #9c7016',
+         'good-soft': '#1f3a28', 'bad-soft': '#40211d', 'font-body': 'Heebo', 'font-head': 'Heebo' } },
+
+  { id: 'kalanit', he: 'כלניות', en: 'Wildflowers',
+    desc: 'שמנת עם אדום כלנית וירוק עלים. צבעוני ושמח בלי להיות ילדותי.',
+    v: { bg: '#fdf8f2', card: '#fff', ink: '#2c2224', muted: '#7a6a6c', accent: '#d2353d', 'accent-dark': '#8e1c22', soft: '#fbe1e2', border: '#ecd9d3', track: '#efe1dc',
+         'header-bg': '#fff', radius: '16px', shadow: '0 4px 16px rgba(120,30,40,.1)', 'card-top': '4px solid #5d8a3a', 'font-body': 'Assistant', 'font-head': 'Rubik' } },
+
+  { id: 'stone', he: 'אבן ומרווה', en: 'Stone & Sage',
+    desc: 'מינימליסטי ומאופק: אפור אבן, ירוק מרווה, פינות חדות יותר וקווים דקים במקום צללים.',
+    v: { bg: '#f3f2ef', card: '#fbfbf9', ink: '#2a2b28', muted: '#74766f', accent: '#6b7d5e', 'accent-dark': '#3c4734', soft: '#e3e8de', border: '#d9d8d2', track: '#e1e0da',
+         'header-bg': '#fbfbf9', 'header-border': '1px solid #d9d8d2', radius: '8px', shadow: 'none', 'card-border': '1px solid #dcdbd5', 'btn-radius': '8px', 'btn-shadow': 'none',
+         'font-body': 'Assistant', 'font-head': 'Assistant' } },
+
+  { id: 'notebook', he: 'מחברת מסע', en: 'Trail Notebook',
+    desc: 'נייר קראפט, דיו כחול וכתב יד בכותרות ובהחלטות. אישי, כמו יומן טיול.',
+    v: { bg: '#efe3cb', 'bg-img': 'repeating-linear-gradient(0deg,transparent 0 27px,rgba(90,70,40,.08) 27px 28px)', card: '#fbf5e6', ink: '#2c2a3a', muted: '#6f6553', accent: '#2f4f8a', 'accent-dark': '#1b2f57', soft: '#dfe4ef', border: '#d8c9a8', track: '#ddcfb0',
+         'header-bg': '#fbf5e6', radius: '6px', shadow: '2px 3px 0 rgba(80,60,30,.18)', 'btn-radius': '6px', 'btn-shadow': '2px 2px 0 #1b2f57',
+         'font-body': 'Alef', 'font-head': 'Amatic SC', 'font-quote': 'Amatic SC', 'quote-size': '1.5rem', 'h1-size': '2.4rem' } },
+
+  { id: 'memorial', he: 'כחול לבן', en: 'Memorial Blue & White',
+    desc: 'לבן נקי עם כחול עמוק ונגיעת זהב. ממלכתי ומכובד, עם גופן סריף קלאסי בכותרות.',
+    v: { bg: '#f5f7fb', card: '#fff', ink: '#1a2238', muted: '#5f6880', accent: '#1f4e9a', 'accent-dark': '#122f5f', soft: '#e1e9f6', border: '#d6dceb', track: '#dde3ef',
+         'header-bg': '#fff', 'header-border': '3px solid #c9a64a', radius: '12px', shadow: '0 4px 16px rgba(20,40,90,.1)', 'h-ink': '#122f5f',
+         'font-body': 'Assistant', 'font-head': 'Frank Ruhl Libre', 'h-weight': 900 } },
+
+  { id: 'dusk', he: 'דמדומים', en: 'Lavender Dusk',
+    desc: 'סגול-לילך רך עם ורוד אבקתי. שקט, רגשי ועדין.',
+    v: { bg: '#f5f1f8', 'bg-img': 'linear-gradient(180deg,#e8def3 0,#f5f1f8 240px)', card: '#fff', ink: '#2d2638', muted: '#776d85', accent: '#7a5ba6', 'accent-dark': '#4a3270', soft: '#ebe2f5', border: '#e0d6ea', track: '#e4dbee',
+         'header-bg': '#fff', radius: '20px', shadow: '0 6px 20px rgba(80,50,120,.12)', 'font-body': 'Heebo', 'font-head': 'Bellefair', 'h-weight': 400, 'h1-size': '2rem' } },
+
+  { id: 'playful', he: 'שמח וצבעוני', en: 'Playful Adventure',
+    desc: 'לכל הגילאים: צבעים חזקים, פינות עגולות מאוד, גופן Fredoka עגלגל. מתאים למשחק משפחתי.',
+    v: { bg: '#fff8e7', 'bg-img': 'radial-gradient(circle at 10% 10%,#ffe08a 0,transparent 160px),radial-gradient(circle at 95% 40%,#b9e6c9 0,transparent 180px)', card: '#fff', ink: '#2a2340', muted: '#6c6587', accent: '#ff7a3d', 'accent-dark': '#c2461a', soft: '#ffe3d4', border: '#f1dfc4', track: '#f6e7cf',
+         'header-bg': '#fff', radius: '24px', shadow: '0 5px 0 rgba(42,35,64,.12)', 'card-border': '2px solid #2a2340', 'btn-shadow': '0 4px 0 #2a2340',
+         'font-body': 'Fredoka', 'font-head': 'Fredoka', 'h-weight': 700 } },
+];
+
+const DEFAULTS = { good: '#2e8b57', bad: '#c0392b', 'good-soft': '#e8f6ee', 'bad-soft': '#fbeceb' };
+const font = f => `"${f}", Heebo, Arial, sans-serif`;
+
+function phone(t) {
+  const v = { ...DEFAULTS, ...t.v };
+  const style = Object.entries(v).map(([k, val]) =>
+    `--${k}:${k.startsWith('font') ? font(val) : val}`).join(';');
+  return `
+  <div class="phone" style='${style}'>
+    <div class="m-header"><img src="images/logo.webp" alt="" style="${v['logo-plate'] ? `background:${v['logo-plate']};border-radius:8px;padding:2px 4px` : ''}"><span class="m-chip">הנמרים</span><span class="m-burger">☰</span></div>
+    <div class="m-main">
+      <div class="m-hero">
+        <span class="logo-plate"><img src="images/logo.webp" alt="בשביל שגיא"></span>
+        <h1>ברוכים הבאים</h1>
+        <p>אתר לזכרו של שגיא. בחרו פעילות מהרשימה.</p>
+      </div>
+      <div class="m-cards">
+        <div class="m-card"><div class="icon">📸</div><h3>איפה צילמתי?</h3><p>מצאו את המקום המדויק שבו צולמה כל תמונה.</p></div>
+        <div class="m-card"><div class="icon">🎨</div><h3>ציד צבעים</h3><p>צלמו בשביל משהו בכל צבע.</p></div>
+      </div>
+      <div class="m-quiz">
+        <div class="m-stats"><span>שאלה 3 מתוך 5</span><span>ניקוד: 2</span></div>
+        <div class="m-progress"><div></div></div>
+        <h2>מה היה המקום האהוב על שגיא?</h2>
+        <div class="m-opt correct">✓ נחל השופט</div>
+        <div class="m-opt wrong">✗ הכנרת</div>
+        <div class="m-opt">החרמון</div>
+        <div class="m-btns"><span class="btn">לשאלה הבאה</span><span class="btn secondary">חזרה</span></div>
+      </div>
+      <div class="m-memory">
+        <p>להתקשר יותר לחברים ותיקים, סתם ככה, בלי סיבה.</p>
+        <div class="m-by">הנמרים <span>4.11.2026</span></div>
+      </div>
+    </div>
+    <div class="m-footer">בשביל שגיא · 2026</div>
+  </div>`;
+}
+
+const gallery = document.getElementById('gallery');
+const toolbar = document.getElementById('toolbar');
+gallery.innerHTML = THEMES.map((t, i) => `
+  <div class="slot" data-id="${t.id}">
+    <div class="slot-label"><span class="num">${i + 1}</span><b>${t.he}</b><small>${t.en}</small></div>
+    <div class="swatches">${['bg', 'card', 'accent', 'accent-dark', 'soft', 'ink'].map(k => `<span style="background:${t.v[k]}"></span>`).join('')}</div>
+    <p class="slot-desc">${t.desc}</p>
+    ${phone(t)}
+  </div>`).join('');
+
+toolbar.innerHTML = `<button class="on" data-id="">הכל</button>` +
+  THEMES.map((t, i) => `<button data-id="${t.id}">${i + 1}. ${t.he}</button>`).join('');
+toolbar.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  toolbar.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  const id = b.dataset.id;
+  gallery.classList.toggle('single', !!id);
+  gallery.querySelectorAll('.slot').forEach(s => s.hidden = id && s.dataset.id !== id);
+});
+</script>
+</body>
+</html>

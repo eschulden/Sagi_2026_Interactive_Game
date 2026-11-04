@@ -15,7 +15,9 @@
       '<label>ההחלטה הטובה שלכם<textarea id="mem-text" rows="6" maxlength="' + C.MAX_TEXT + '" required></textarea><div class="mem-counter" id="mem-counter">0 / ' + C.MAX_TEXT + '</div></label>' +
       '<input id="mem-hp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<button class="btn" id="mem-send" type="submit">שליחה</button>' +
-      '<div id="mem-msg" class="feedback" style="display:none"></div></form></div>';
+      '<div id="mem-msg" class="feedback" style="display:none"></div></form></div>' +
+      '<div id="mem-recent" class="memories-recent-box"></div>';
+    recent(document.getElementById('mem-recent'));
     document.getElementById('mem-name').value = Group.get().slice(0, C.MAX_NAME);
     const form = document.getElementById('mem-form');
     const ta = document.getElementById('mem-text');
@@ -53,16 +55,68 @@
   }
 
   // Loaded as a <script> (JSONP) instead of fetch: no CORS, so it also works when opened from file://
+  // Calls ok(rows) with the non-empty rows, newest first. Columns: timestamp, name, text.
+  function loadRows(ok, fail) {
+    const cb = '__memoriesCb' + Date.now();
+    window[cb] = function (resp) {
+      delete window[cb];
+      if (!resp || resp.status !== 'ok') return fail();
+      ok(resp.table.rows.filter(function (r) { return r.c[2] && String(r.c[2].v || '').trim(); }).reverse());
+    };
+    const s = document.createElement('script');
+    s.src = 'https://docs.google.com/spreadsheets/d/' + C.SHEET_ID +
+      '/gviz/tq?tqx=out:json;responseHandler:' + cb + '&_=' + Date.now();
+    s.onerror = fail;
+    document.head.appendChild(s);
+  }
+
+  function card(r, i) {
+    const card = document.createElement('div');
+    card.className = 'card memory-card';
+    card.style.animationDelay = Math.min(i, 8) * 60 + 'ms';
+    const p = document.createElement('p');
+    p.textContent = r.c[2].v;
+    card.appendChild(p);
+    const by = document.createElement('div');
+    by.className = 'memory-by';
+    const who = document.createElement('span');
+    who.textContent = (r.c[1] && String(r.c[1].v || '').trim()) || 'אנונימי';
+    by.appendChild(who);
+    // "11/4/2026 19:49:53" -> "11/4/2026 19:49"
+    const when = r.c[0] && r.c[0].f ? r.c[0].f.replace(/(\d+:\d+):\d+$/, '$1') : '';
+    if (when) {
+      const d = document.createElement('span');
+      d.className = 'memory-date';
+      d.textContent = when;
+      by.appendChild(d);
+    }
+    card.appendChild(by);
+    return card;
+  }
+
+  // The last 3 decisions, under the form on the add page. Stays hidden if loading fails.
+  function recent(box) {
+    if (!C.SHEET_ID || !box) return;
+    loadRows(function (rows) {
+      if (!rows.length) return;
+      const h = document.createElement('h2');
+      h.textContent = 'מה אחרים כתבו לאחרונה';
+      box.appendChild(h);
+      const list = document.createElement('div');
+      list.className = 'memories-recent';
+      rows.slice(0, 3).forEach(function (r, i) { list.appendChild(card(r, i)); });
+      box.appendChild(list);
+      const more = document.createElement('div');
+      more.className = 'btn-row';
+      more.innerHTML = '<a class="btn secondary" href="memories.html">לכל ההחלטות</a>';
+      box.appendChild(more);
+    }, function () {});
+  }
+
   function wall() {
     if (!C.SHEET_ID) return notConfigured();
     root.innerHTML = '<p class="lead">טוען זיכרונות...</p>';
-    function fail() {
-      root.innerHTML = '<div class="card"><p>לא הצלחנו לטעון את ההחלטות. נסו לרענן.</p></div>';
-    }
-    window.__memoriesCb = function (resp) {
-      if (!resp || resp.status !== 'ok') return fail();
-      // Columns: timestamp, name, text. Newest first.
-      const rows = resp.table.rows.filter(function (r) { return r.c[2] && String(r.c[2].v || '').trim(); });
+    loadRows(function (rows) {
       root.innerHTML = '';
       if (!rows.length) { root.innerHTML = '<div class="card memory-empty"><p>עדיין אין החלטות. אפשר להיות הראשונים.</p></div>'; return; }
       const count = document.getElementById('mem-count');
@@ -70,34 +124,10 @@
       const wall = document.createElement('div');
       wall.className = 'memories-wall';
       root.appendChild(wall);
-      rows.reverse().forEach(function (r, i) {
-        const card = document.createElement('div');
-        card.className = 'card memory-card';
-        card.style.animationDelay = Math.min(i, 8) * 60 + 'ms';
-        const p = document.createElement('p');
-        p.textContent = r.c[2].v;
-        card.appendChild(p);
-        const by = document.createElement('div');
-        by.className = 'memory-by';
-        const who = document.createElement('span');
-        who.textContent = (r.c[1] && String(r.c[1].v || '').trim()) || 'אנונימי';
-        by.appendChild(who);
-        const when = r.c[0] && r.c[0].f ? r.c[0].f.split(' ')[0] : '';
-        if (when) {
-          const d = document.createElement('span');
-          d.className = 'memory-date';
-          d.textContent = when;
-          by.appendChild(d);
-        }
-        card.appendChild(by);
-        wall.appendChild(card);
-      });
-    };
-    const s = document.createElement('script');
-    s.src = 'https://docs.google.com/spreadsheets/d/' + C.SHEET_ID +
-      '/gviz/tq?tqx=out:json;responseHandler:__memoriesCb&_=' + Date.now();
-    s.onerror = fail;
-    document.head.appendChild(s);
+      rows.forEach(function (r, i) { wall.appendChild(card(r, i)); });
+    }, function () {
+      root.innerHTML = '<div class="card"><p>לא הצלחנו לטעון את ההחלטות. נסו לרענן.</p></div>';
+    });
   }
 
   mode === 'add' ? add() : wall();

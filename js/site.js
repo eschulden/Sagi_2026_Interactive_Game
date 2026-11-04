@@ -25,6 +25,7 @@ const PAGES = [
   { file: 'quiz.html',         title: 'כמה אתם מכירים את שגיא?', icon: '❓', desc: 'שאלות על שגיא - הוכיחו שאתם באמת מכירים אותו.' },
   { file: 'memory-add.html',    title: 'קחו החלטה טובה',           icon: '✍️', desc: 'כתבו החלטה טובה שאתם לוקחים לעצמכם, והיא תישמר.' },
   { file: 'memories.html',      title: 'ההחלטות הטובות',          icon: '🌱', desc: 'כל ההחלטות הטובות שמטיילים לקחו לעצמם.' },
+  { file: 'progress.html',     title: 'ההתקדמות שלכם',           icon: '📊', desc: 'השיאים שלכם בכל פעילות וההחלטות הטובות שלקחתם עד עכשיו.' },
   { file: 'summary.html',      title: 'סיכום המשחק',             icon: '🌅', desc: 'סוף המשחק - סיכום הפעילויות ומילות סיום.' },
   // { file: 'photos.html', title: 'תמונות', icon: '📷', desc: 'אלבום תמונות.' },
 ];
@@ -66,17 +67,20 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
                   && (typeof window.SHOW_NAV === 'undefined' || window.SHOW_NAV !== false);
 
   // Pages become visible in the menu once visited (any mode, incl. ?hidden), and stay visible.
+  // Opening summary.html (end of the game) makes all of them visible.
   // If storage is blocked, nothing can be remembered, so show everything.
   const VISITED_KEY = 'sagi2026:visited';
   let visited = null;
   try {
     visited = JSON.parse(localStorage.getItem(VISITED_KEY)) || [];
-    if (PAGES.some(p => p.file === current) && visited.indexOf(current) === -1) {
-      visited.push(current);
+    const unlock = current === 'summary.html' ? PAGES.map(p => p.file) : PAGES.some(p => p.file === current) ? [current] : [];
+    const fresh = unlock.filter(f => visited.indexOf(f) === -1);
+    if (fresh.length) {
+      visited = visited.concat(fresh);
       localStorage.setItem(VISITED_KEY, JSON.stringify(visited));
     }
   } catch (e) { visited = null; }
-  const ALWAYS_VISIBLE = ['main.html', 'sagi.html'];
+  const ALWAYS_VISIBLE = ['main.html', 'sagi.html', 'progress.html'];
   const visible = PAGES.filter(p => ALWAYS_VISIBLE.indexOf(p.file) !== -1 || visited === null || visited.indexOf(p.file) !== -1);
 
   // Links stay bare — nav is on by default, no need to propagate a param

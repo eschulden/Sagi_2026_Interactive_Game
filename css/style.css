@@ -1,23 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Varela+Round&display=swap");
+
+/* Theme: "כנרת" (Sea of Galilee). Every theme color lives here. */
 :root {
-  --bg: #fbf6ee;
+  --bg: #eef7f9;
+  --bg-img: linear-gradient(180deg, #d6eef4 0, #eef7f9 240px);
   --card: #ffffff;
-  --ink: #2b2a33;
-  --muted: #6d6a77;
-  --accent: #6f8335;
-  --accent-dark: #3f4a1e;
+  --ink: #173440;
+  --muted: #5b7a86;
+  --accent: #2a8ca3;
+  --accent-dark: #14596b;
+  --accent-hover: #3299b1;
+  --soft: #d6eef4;
+  --soft-hover: #c4e5ee;
+  --border: #cde3ea;
+  --track: #d3e6ec;
+  --field: #f8fcfd;
+  --focus: rgba(42, 140, 163, .18);
+  --placeholder: #dbe9ee;
   --sea: #2f7f9b;
   --good: #2e8b57;
   --bad: #c0392b;
-  --radius: 16px;
-  --shadow: 0 4px 18px rgba(60, 40, 20, .12);
+  --radius: 20px;
+  --shadow: 0 6px 20px rgba(20, 90, 110, .12);
+  --font: "Varela Round", "Heebo", "Assistant", "Segoe UI", Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: "Heebo", "Assistant", "Segoe UI", Arial, sans-serif;
-  background: var(--bg);
+  font-family: var(--font);
+  background: var(--bg) var(--bg-img) no-repeat;
   color: var(--ink);
   line-height: 1.6;
   font-size: 18px;
@@ -53,7 +66,7 @@ a { color: var(--accent-dark); }
   border-radius: 999px;
   font-size: .95rem;
 }
-.site-nav a:hover { background: #eef1e0; }
+.site-nav a:hover { background: var(--soft); }
 .site-nav a.active { background: var(--accent); color: #fff; }
 /* standalone mode: logo centred, no nav links */
 .site-header--standalone .inner { justify-content: center; }
@@ -63,11 +76,11 @@ a { color: var(--accent-dark); }
 .group-chip {
   margin-right: auto;
   max-width: 45vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  background: #eef1e0; color: var(--accent-dark);
+  background: var(--soft); color: var(--accent-dark);
   border-radius: 999px; padding: 5px 14px;
   font-size: .9rem; font-weight: 700; text-decoration: none;
 }
-.group-chip:hover { background: #e2e8c8; }
+.group-chip:hover { background: var(--soft-hover); }
 .group-chip + .hamburger { margin-right: 0; }
 
 /* login page */
@@ -78,9 +91,9 @@ a { color: var(--accent-dark); }
 .login input {
   display: block; width: 100%; margin: 8px 0 18px;
   padding: 12px 14px; font: inherit; color: var(--ink);
-  border: 2px solid #eadfce; border-radius: 14px; background: #fffdf9;
+  border: 2px solid var(--border); border-radius: 14px; background: var(--field);
 }
-.login input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(111, 131, 53, .15); }
+.login input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--focus); }
 .login .btn { width: 100%; font-size: 1.1rem; }
 .login-error { margin: -8px 0 14px; color: var(--bad); font-size: .95rem; }
 
@@ -93,7 +106,7 @@ a { color: var(--accent-dark); }
   padding: 6px 8px; margin-right: auto;
   border-radius: 8px;
 }
-.hamburger:hover { background: #eef1e0; }
+.hamburger:hover { background: var(--soft); }
 
 /* slide-in drawer */
 .nav-drawer {
@@ -114,7 +127,7 @@ a { color: var(--accent-dark); }
   padding: 12px 16px; border-radius: 12px;
   font-size: 1.05rem;
 }
-.nav-drawer a:hover { background: #eef1e0; }
+.nav-drawer a:hover { background: var(--soft); }
 .nav-drawer a.active { background: var(--accent); color: #fff; }
 
 /* overlay behind drawer */
@@ -136,6 +149,8 @@ a { color: var(--accent-dark); }
 main { max-width: 1000px; margin: 0 auto; padding: 24px 16px 60px; }
 h1 { font-size: 2rem; margin: .2em 0 .4em; line-height: 1.25; }
 h2 { font-size: 1.4rem; }
+/* Varela Round has one weight; real 400 reads cleaner than a synthetic bold on headings */
+h1, h2, h3 { font-weight: 400; }
 .lead { font-size: 1.15rem; color: var(--muted); }
 .site-footer { text-align: center; color: var(--muted); padding: 20px 16px 40px; font-size: .9rem; }
 .footer-copy { margin-top: 10px; font-size: .85rem; }
@@ -152,7 +167,7 @@ h2 { font-size: 1.4rem; }
   box-shadow: var(--shadow);
   transition: background .15s, transform .12s;
 }
-.sagi-footer-btn:hover { background: #eef1e0; transform: translateY(-2px); }
+.sagi-footer-btn:hover { background: var(--soft); transform: translateY(-2px); }
 
 .card {
   background: var(--card);
@@ -165,7 +180,7 @@ h2 { font-size: 1.4rem; }
 .hero .portrait {
   width: 150px; height: 150px; border-radius: 50%;
   object-fit: cover; border: 5px solid #fff; box-shadow: var(--shadow);
-  background: #e9dcc9; display: block; margin: 0 auto 16px;
+  background: var(--placeholder); display: block; margin: 0 auto 16px;
 }
 
 .cards-grid {
@@ -192,24 +207,24 @@ h2 { font-size: 1.4rem; }
   padding: 12px 26px; border-radius: 999px; font-weight: 700;
   box-shadow: 0 3px 0 var(--accent-dark);
 }
-.btn:hover { background: #7f9640; }
+.btn:hover { background: var(--accent-hover); }
 .btn.secondary { background: #fff; color: var(--accent-dark); border: 2px solid var(--accent); box-shadow: none; }
 
 .options { display: grid; gap: 10px; margin: 16px 0; }
 .option {
   font: inherit; text-align: right; cursor: pointer;
-  background: #fff; border: 2px solid #e4d6c2; border-radius: 12px;
+  background: #fff; border: 2px solid var(--border); border-radius: 12px;
   padding: 12px 16px; color: var(--ink);
 }
-.option:hover:not(:disabled) { border-color: var(--accent); background: #f6f8ec; }
+.option:hover:not(:disabled) { border-color: var(--accent); background: var(--soft); }
 .option:disabled { cursor: default; }
 .option.correct { border-color: var(--good); background: #e8f6ee; }
 .option.wrong { border-color: var(--bad); background: #fbeceb; }
 
-.feedback { padding: 12px 16px; border-radius: 12px; background: #f6f8ec; margin-bottom: 14px; }
+.feedback { padding: 12px 16px; border-radius: 12px; background: var(--soft); margin-bottom: 14px; }
 .memory { border-right: 4px solid var(--accent); padding: 6px 14px; margin: 14px 0; color: var(--muted); font-style: italic; }
 
-.progress { height: 10px; background: #eadfce; border-radius: 99px; overflow: hidden; margin-bottom: 16px; }
+.progress { height: 10px; background: var(--track); border-radius: 99px; overflow: hidden; margin-bottom: 16px; }
 .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .4s; }
 .stats { display: flex; justify-content: space-between; color: var(--muted); font-size: .95rem; margin-bottom: 6px; }
 
@@ -245,10 +260,10 @@ h2 { font-size: 1.4rem; }
 #memories input, #memories textarea {
   display: block; width: 100%; box-sizing: border-box; margin-top: 8px;
   padding: 12px 14px; font: inherit; font-weight: 400; color: var(--ink);
-  border: 2px solid #eadfce; border-radius: 14px; background: #fffdf9; transition: border-color .2s, box-shadow .2s;
+  border: 2px solid var(--border); border-radius: 14px; background: var(--field); transition: border-color .2s, box-shadow .2s;
 }
 #memories textarea { resize: vertical; min-height: 140px; line-height: 1.6; }
-#memories input:focus, #memories textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(111, 131, 53, .15); }
+#memories input:focus, #memories textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--focus); }
 .mem-counter { direction: ltr; text-align: right; color: var(--muted); font-size: .85rem; margin-top: 4px; }
 #memories .hp { position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; border: 0; opacity: 0; overflow: hidden; pointer-events: none; }
 #mem-send { width: 100%; font-size: 1.1rem; }
@@ -258,17 +273,19 @@ h2 { font-size: 1.4rem; }
 .memories-wall { column-width: 290px; column-gap: 18px; }
 .memory-card {
   position: relative; break-inside: avoid; margin: 0 0 18px; padding: 26px 22px 18px !important;
-  background: linear-gradient(180deg, #fffdf9, #fff); border-top: 4px solid var(--accent);
+  background: linear-gradient(180deg, var(--field), var(--card)); border-top: 4px solid var(--accent);
   animation: mem-in .5s ease both;
 }
 .memory-card::before {
   content: '"'; position: absolute; top: 4px; right: 14px; font: 700 3.4rem/1 Georgia, serif; color: var(--accent); opacity: .25;
 }
 .memory-card p { white-space: pre-wrap; margin: 0 0 14px; font-size: 1.08rem; line-height: 1.7; }
-.memory-by { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; border-top: 1px dashed #eadfce; padding-top: 10px; color: var(--accent-dark); font-weight: 700; }
+.memory-by { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; border-top: 1px dashed var(--border); padding-top: 10px; color: var(--accent-dark); font-weight: 700; }
 .memory-date { color: var(--muted); font-weight: 400; font-size: .85rem; }
 .memory-empty { text-align: center; padding: 30px 10px; color: var(--muted); }
 .memories-cta { text-align: center; margin: 8px 0 26px; }
+.memories-recent-box h2 { text-align: center; margin: 30px 0 16px; }
+.memories-recent-box .btn-row { justify-content: center; }
 @keyframes mem-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .memory-card { animation: none; } }
 
@@ -324,7 +341,32 @@ a.btn { display: inline-block; text-decoration: none; }
 
 /* Color hunt: a swatch stands in for the photo until the color is found */
 .color-swatch { display: block; width: 100%; aspect-ratio: 1; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); }
-.color-banner { height: 64px; border-radius: 12px; margin-bottom: 12px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); }
+/* The color's own page: the card is framed in that color (white gets a thin gray edge so it shows) */
+.color-frame { border: 10px solid var(--frame); }
+/* Camera and gallery side by side, even on a phone */
+.btn-row.pair { display: grid; grid-template-columns: 1fr 1fr; }
+.btn-row.pair .btn { width: 100%; box-sizing: border-box; text-align: center; padding: 12px 10px; }
+/* Heads-up that photos go to a folder every group can see */
+.share-note {
+  margin: 14px 0; padding: 10px 14px; border: 2px solid #d9a400; border-radius: 12px;
+  background: #fff6d6; color: var(--ink); font-size: .95rem;
+}
+.share-note::before { content: 'ℹ️ '; }
+.save-note::before { content: '⚠️ '; }
+/* Down "V" under the notes, pointing at the other groups' photos below the card */
+.others-hint {
+  display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%;
+  margin: 4px 0 14px; padding: 4px; border: 0; background: none; cursor: pointer;
+  color: var(--ink); font: inherit; font-size: .9rem;
+}
+.others-hint .chev {
+  width: 18px; height: 18px; margin-top: 2px;
+  border-right: 4px solid currentColor; border-bottom: 4px solid currentColor;
+  transform: rotate(45deg); animation: chev-bob 1.4s ease-in-out infinite;
+}
+@keyframes chev-bob { 50% { transform: translateY(6px) rotate(45deg); } }
+@media (prefers-reduced-motion: reduce) { .others-hint .chev { animation: none; } }
+.color-frame.light { box-shadow: var(--shadow), 0 0 0 1px #cfcfcf, inset 0 0 0 1px #cfcfcf; }
 /* Color hunt photos: a grid of every photo of one color; tap one to see it full screen */
 .photo-tile { position: relative; }
 .photo-count-badge {
