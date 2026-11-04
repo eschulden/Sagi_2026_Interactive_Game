@@ -183,12 +183,12 @@
     const draw = function (footer) {
       others.innerHTML = '<div class="card"><h2>📸 מה צילמו הקבוצות האחרות</h2>' +
         (state.items.length ? '<div class="color-gallery">' + state.items.map(p =>
-          '<figure><img src="' + driveImage(p.id, 400) + '" alt="תמונה של ' + esc(p.group) + '" loading="lazy" data-full="' +
+          '<figure><img src="' + driveImage(p.id, 400) + '" alt="תמונה של ' + esc(p.group) + '" loading="lazy" data-id="' + esc(p.id) + '" data-full="' +
           driveImage(p.id, 1600) + '"><figcaption><strong>' + esc(p.group) + '</strong><br>' +
           new Date(p.time).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }) +
           '</figcaption></figure>').join('') + '</div>' : '') + footer + '</div>';
       others.querySelectorAll('[data-full]').forEach(function (img) {
-        img.onclick = () => view(img.dataset.full);
+        img.onclick = () => view(img.dataset.full, () => fetchBlob(driveFull(img.dataset.id)).then(b => asFile(b, color)));
         img.onerror = () => img.parentNode.remove();  // e.g. removed by hand in Drive
       });
       const btn = others.querySelector('#more-others');
@@ -365,15 +365,40 @@
         detail(i);
       };
     });
-    root.querySelectorAll('[data-view]').forEach(img => img.onclick = () => view(img.src));
+    // Own photos can be saved to the phone; rejected ones (in #status) can only be viewed
+    root.querySelectorAll('[data-view]').forEach(function (img) {
+      const p = res && res.photos.filter(x => x.id === (img.parentNode.dataset.photo || ''))[0];
+      img.onclick = () => view(img.src, p && (() => ownPhotoFile(p, c.color)));
+    });
   }
 
-  // Full-screen view of one photo; a tap anywhere closes it
-  function view(src) {
+  // Drive's direct image address: it allows the site to download the image (the thumbnail address doesn't)
+  function driveFull(id) { return 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(id) + '=w1600'; }
+  function asFile(blob, color) { return new File([blob], 'color-hunt-' + color + '-' + Date.now() + '.jpg', { type: 'image/jpeg' }); }
+  function fetchBlob(url) { return fetch(url).then(r => r.ok ? r.blob() : Promise.reject(new Error(r.status))); }
+  // The 1280px copy in Drive if it got there, else the small copy kept on the phone
+  function ownPhotoFile(p, color) {
+    const local = () => fetchBlob(p.src);
+    return (p.fileId ? fetchBlob(driveFull(p.fileId)).catch(local) : local()).then(b => asFile(b, color));
+  }
+
+  // Full-screen view of one photo; a tap anywhere but the save button closes it.
+  // load (optional) resolves to the photo as a File, which shows a "save to phone" button. The file is
+  // fetched as soon as the view opens, because iPhone only opens the Share sheet straight from a tap.
+  function view(src, load) {
     const o = document.createElement('div');
     o.className = 'photo-viewer';
-    o.innerHTML = '<img src="' + src + '" alt="">';
-    o.onclick = () => o.remove();
+    o.innerHTML = '<img src="' + src + '" alt="">' + (load ? '<div class="viewer-save">' +
+      '<button class="btn" disabled>טוענים...</button>' +
+      (IOS ? '<p>בחלון שנפתח בחרו "שמירת תמונה".</p>' : '') + '</div>' : '');
+    o.onclick = e => { if (!e.target.closest('.viewer-save')) o.remove(); };
+    if (load) {
+      const btn = o.querySelector('.viewer-save button');
+      let file = null;
+      load().then(function (f) { file = f; btn.disabled = false; btn.textContent = '💾 לשמור בטלפון'; },
+        function () { btn.textContent = 'לא הצלחנו לטעון את התמונה'; });
+      btn.onclick = () => file && saveToPhone(file);
+    }
     document.body.appendChild(o);
   }
 
