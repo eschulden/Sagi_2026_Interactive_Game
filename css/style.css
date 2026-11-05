@@ -287,6 +287,10 @@ h1, h2, h3 { font-weight: 400; }
 .land { fill: #f0dfba; stroke: #b99a62; stroke-width: 1; stroke-linejoin: round; }
 .lake { fill: #bfe1ee; stroke: #8fbfd2; stroke-width: .8; }
 .sea-label { font-size: 9px; font-style: italic; fill: #3f7893; direction: ltr; paint-order: stroke; stroke: #fff; stroke-width: 2.5px; stroke-opacity: .8; }
+.cities { pointer-events: none; }
+.city-dot { fill: #5a4630; stroke: #fff; stroke-width: .8; }
+.city-dot.capital { fill: #8b2e2e; }
+.city-label { font-size: 8.5px; font-weight: 700; fill: #4a3a28; direction: ltr; paint-order: stroke; stroke: #fff; stroke-width: 2.5px; stroke-opacity: .85; }
 .route { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 4; }
 
 @media (max-width: 720px) {
@@ -330,6 +334,18 @@ h1, h2, h3 { font-weight: 400; }
   content: '"'; position: absolute; top: 4px; right: 14px; font: 700 3.4rem/1 Georgia, serif; color: var(--accent); opacity: .25;
 }
 .memory-card p { white-space: pre-wrap; margin: 0 0 14px; font-size: 1.08rem; line-height: 1.7; }
+/* Summary/progress: decisions packed into columns by js/progress.js (each card goes to the shortest column) */
+.decisions-wall { display: flex; gap: 18px; align-items: flex-start; }
+.decisions-wall > .col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.decisions-wall .memory-card { margin: 0; }
+a.add-card {
+  display: block; text-decoration: none; text-align: center; color: var(--accent-dark);
+  background: transparent; box-shadow: none; border: 2px dashed var(--accent);
+  opacity: .6; animation: none; transition: opacity .2s;
+}
+a.add-card::before { content: none; }
+a.add-card p { font-weight: 700; }
+a.add-card:hover { opacity: 1; }
 .memory-by { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; border-top: 1px dashed var(--border); padding-top: 10px; color: var(--accent-dark); font-weight: 700; }
 .memory-date { color: var(--muted); font-weight: 400; font-size: .85rem; }
 .memory-empty { text-align: center; padding: 30px 10px; color: var(--muted); }

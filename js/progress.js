@@ -42,14 +42,42 @@
     box.innerHTML = '<div class="card" style="text-align:center"><p>עוד לא לקחתם החלטה טובה.</p>' +
       '<a class="btn" href="memory-add.html">לקחת החלטה טובה</a></div>';
   } else {
-    box.className = 'memories-wall';
-    mine.forEach(function (d) {
+    box.className = 'decisions-wall';
+    const cards = mine.map(function (d) {
       const card = document.createElement('div');
       card.className = 'card memory-card';
       const p = document.createElement('p');
       p.textContent = d.text;
       card.appendChild(p);
-      box.appendChild(card);
+      return card;
     });
+    const more = document.createElement('a');
+    more.className = 'card memory-card add-card';
+    more.href = 'memory-add.html';
+    more.innerHTML = '<p>✍️ קחו עוד החלטה טובה</p>';
+    cards.push(more);
+
+    // Masonry: each card (in order) goes into the currently shortest column,
+    // so the "add" card fills the gap under a short decision.
+    const COL_MIN = 260, GAP = 18;
+    let cols = 0;
+    const layout = function () {
+      const n = Math.max(1, Math.floor((box.clientWidth + GAP) / (COL_MIN + GAP)));
+      if (n === cols) return;
+      cols = n;
+      box.innerHTML = '';
+      const colEls = [];
+      for (let i = 0; i < n; i++) {
+        const c = document.createElement('div');
+        c.className = 'col';
+        box.appendChild(c);
+        colEls.push(c);
+      }
+      cards.forEach(function (card) {
+        colEls.reduce(function (a, b) { return b.offsetHeight < a.offsetHeight ? b : a; }).appendChild(card);
+      });
+    };
+    layout();
+    window.addEventListener('resize', layout);
   }
 })();

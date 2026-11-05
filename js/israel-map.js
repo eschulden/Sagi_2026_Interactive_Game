@@ -20,6 +20,31 @@ window.IsraelMap = (function () {
       '" text-anchor="' + (anchor || 'middle') + '">' + text + '</text>';
   }
 
+  // Main cities: [name, lat, lon, label side ('l' = left of the dot, 'r' = right), capital?]
+  const CITIES = [
+    ['קריית שמונה', 33.207, 35.570, 'l'],
+    ['צפת', 32.965, 35.496, 'r'],
+    ['חיפה', 32.794, 34.990, 'l'],
+    ['טבריה', 32.795, 35.531, 'l'],
+    ['עפולה', 32.607, 35.289, 'r'],
+    ['נתניה', 32.329, 34.857, 'l'],
+    ['תל אביב', 32.080, 34.781, 'l'],
+    ['ירושלים', 31.778, 35.216, 'r', true],
+    ['אשדוד', 31.804, 34.655, 'l'],
+    ['באר שבע', 31.252, 34.791, 'r'],
+    ['מצפה רמון', 30.610, 34.801, 'r'],
+    ['אילת', 29.558, 34.952, 'r']
+  ];
+
+  function citiesSvg() {
+    return '<g class="cities">' + CITIES.map(function (c) {
+      const x = px(c[2]), y = py(c[1]), left = c[3] === 'l';
+      return '<circle class="city-dot' + (c[4] ? ' capital' : '') + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
+        '" r="' + (c[4] ? 3 : 2.2) + '"/><text class="city-label" x="' + (x + (left ? -4 : 4)).toFixed(1) +
+        '" y="' + (y + 3).toFixed(1) + '" text-anchor="' + (left ? 'end' : 'start') + '">' + c[0] + '</text>';
+    }).join('') + '</g>';
+  }
+
   // Everything drawn under the pins: sea (background), neighbours, Israel, lakes, sea names.
   function baseSvg() {
     const neighbours = ['LBN', 'SYR', 'JOR', 'SAU', 'EGY'].map(k => '<path class="neighbour" d="' + path(D[k]) + '"/>').join('');
@@ -29,7 +54,8 @@ window.IsraelMap = (function () {
       seaLabel('הים התיכון', 34.05, 32.2) +
       seaLabel('ים המלח', 35.62, 31.42, 'start') +
       seaLabel('כנרת', 35.67, 32.8, 'start') +
-      seaLabel('מפרץ אילת', 34.95, 28.85, 'middle');
+      seaLabel('מפרץ אילת', 34.95, 28.85, 'middle') +
+      citiesSvg();
   }
 
   // Haversine distance in km
