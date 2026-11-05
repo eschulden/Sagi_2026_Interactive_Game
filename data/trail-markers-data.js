@@ -1,5 +1,5 @@
 /*
- * חידון סימוני שבילים. אותו מבנה כמו data/quiz-data.js, עם תוספות:
+ * חידון סימוני שבילים. אותו מבנה כמו data/sagi-quiz-data.js, עם תוספות:
  *   marker  - (לא חובה) סימון שיוצג מעל השאלה: [צבע עליון, אמצעי, תחתון]
  *   options - טקסט, או { marker: [...] } כדי להציג סימון כתשובה
  * צבעים מוכנים: TrailMarker.COLORS (red, green, blue, black, orange, white)

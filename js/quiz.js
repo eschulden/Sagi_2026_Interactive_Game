@@ -1,8 +1,8 @@
 (function () {
   const Q = window.QUIZ;
   const root = document.getElementById('quiz');
-  // One save slot per quiz page (quiz.html, know-place.html, trail-markers.html)
-  const KEY = 'quiz:' + (location.pathname.split('/').pop() || 'quiz.html');
+  // One save slot per quiz page (sagi-quiz.html, know-place.html, trail-markers.html)
+  const KEY = 'quiz:' + (location.pathname.split('/').pop() || 'sagi-quiz.html');
   let i = 0, score = 0, answered = false;
 
   function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }

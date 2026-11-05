@@ -1,5 +1,5 @@
 /*
- * חיבור ל-Google Sheets. ההגדרה מפורטת ב-README (סעיף "זיכרונות").
+ * חיבור ל-Google Sheets. ההגדרה מפורטת ב-README (סעיף "החלטות טובות").
  *
  * FORM_URL   = כתובת השליחה של הטופס. נראית כך:
  *              https://docs.google.com/forms/d/e/<FORM_ID>/formResponse
@@ -9,7 +9,7 @@
  *
  * כל עוד הערכים ריקים, הדפים מציגים הודעה שהחיבור עדיין לא הוגדר.
  */
-window.MEMORIES = {
+window.DECISIONS = {
   FORM_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSfs3N5F3ivdKc2SvnJiIMvqLxWZUChXZY6ESvsIV68duxWogw/formResponse',
   FIELD_NAME: 'entry.346449338',
   FIELD_TEXT: 'entry.1278560357',

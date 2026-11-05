@@ -306,9 +306,9 @@ h1, h2, h3 { font-weight: 400; }
 .options.visual { grid-template-columns: repeat(2, 1fr); }
 
 /* Memories: submit form and wall */
-.memories-intro { text-align: center; max-width: 560px; margin: 0 auto 22px; }
-.memories-intro .flame { font-size: 2.6rem; display: block; margin-bottom: 4px; }
-#memories .card { padding: 24px; }
+.decisions-intro { text-align: center; max-width: 560px; margin: 0 auto 22px; }
+.decisions-intro .flame { font-size: 2.6rem; display: block; margin-bottom: 4px; }
+#decisions .card { padding: 24px; }
 .mem-form label { display: block; margin-bottom: 18px; font-weight: 700; color: var(--accent-dark); }
 .mem-form label small { font-weight: 400; color: var(--muted); }
 .mem-form input, .mem-form textarea {
@@ -323,7 +323,7 @@ h1, h2, h3 { font-weight: 400; }
 #mem-send { width: 100%; font-size: 1.1rem; }
 #mem-msg { margin-top: 14px; background: #fbeceb; }
 
-/* "קחו החלטה" card (modal) on memories.html */
+/* "קחו החלטה" card (modal) on decisions.html */
 .mem-modal {
   display: none; position: fixed; inset: 0; z-index: 300;
   background: rgba(0, 0, 0, .55);
@@ -346,21 +346,21 @@ body.modal-open { overflow: hidden; }
 }
 .mem-close:hover { background: var(--soft); }
 
-.memories-count { text-align: center; color: var(--muted); margin: 0 0 22px; }
-.memories-wall { column-width: 290px; column-gap: 18px; }
-.memory-card {
+.decisions-count { text-align: center; color: var(--muted); margin: 0 0 22px; }
+.decisions-board { column-width: 290px; column-gap: 18px; }
+.decision-card {
   position: relative; break-inside: avoid; margin: 0 0 18px; padding: 26px 22px 18px !important;
   background: linear-gradient(180deg, var(--field), var(--card)); border-top: 4px solid var(--accent);
   animation: mem-in .5s ease both;
 }
-.memory-card::before {
+.decision-card::before {
   content: '"'; position: absolute; top: 4px; right: 14px; font: 700 3.4rem/1 Georgia, serif; color: var(--accent); opacity: .25;
 }
-.memory-card p { white-space: pre-wrap; margin: 0 0 14px; font-size: 1.08rem; line-height: 1.7; }
+.decision-card p { white-space: pre-wrap; margin: 0 0 14px; font-size: 1.08rem; line-height: 1.7; }
 /* Summary/progress: decisions packed into columns by js/progress.js (each card goes to the shortest column) */
 .decisions-wall { display: flex; gap: 18px; align-items: flex-start; }
 .decisions-wall > .col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
-.decisions-wall .memory-card { margin: 0; }
+.decisions-wall .decision-card { margin: 0; }
 a.add-card {
   display: block; text-decoration: none; text-align: center; color: var(--accent-dark);
   background: transparent; box-shadow: none; border: 2px dashed var(--accent);
@@ -369,12 +369,12 @@ a.add-card {
 a.add-card::before { content: none; }
 a.add-card p { font-weight: 700; }
 a.add-card:hover { opacity: 1; }
-.memory-by { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; border-top: 1px dashed var(--border); padding-top: 10px; color: var(--accent-dark); font-weight: 700; }
-.memory-date { color: var(--muted); font-weight: 400; font-size: .85rem; }
-.memory-empty { text-align: center; padding: 30px 10px; color: var(--muted); }
-.memories-cta { text-align: center; margin: 8px 0 12px; }
+.decision-by { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; border-top: 1px dashed var(--border); padding-top: 10px; color: var(--accent-dark); font-weight: 700; }
+.decision-date { color: var(--muted); font-weight: 400; font-size: .85rem; }
+.decision-empty { text-align: center; padding: 30px 10px; color: var(--muted); }
+.decisions-cta { text-align: center; margin: 8px 0 12px; }
 @keyframes mem-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .memory-card { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .decision-card { animation: none; } }
 
 /* Guess game: revealed hints */
 .hints { margin: 0 0 12px; padding: 0 20px 0 0; color: var(--accent-dark); }
@@ -385,13 +385,13 @@ a.add-card:hover { opacity: 1; }
 a.btn { display: inline-block; text-decoration: none; }
 .btn-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
 @media (max-width: 600px) {
-  .memories-intro h1 { font-size: 1.6rem; }
-  .memories-intro .lead { font-size: 1.05rem; }
-  .memories-intro .flame { font-size: 2.2rem; }
-  #memories .card { padding: 18px 16px; }
+  .decisions-intro h1 { font-size: 1.6rem; }
+  .decisions-intro .lead { font-size: 1.05rem; }
+  .decisions-intro .flame { font-size: 2.2rem; }
+  #decisions .card { padding: 18px 16px; }
   .mem-panel { padding: 18px 16px 14px; }
-  .btn-row .btn, .memories-cta .btn { width: 100%; box-sizing: border-box; text-align: center; }
-  .memories-wall { column-width: auto; column-count: 1; }
+  .btn-row .btn, .decisions-cta .btn { width: 100%; box-sizing: border-box; text-align: center; }
+  .decisions-board { column-width: auto; column-count: 1; }
 }
 
 /* Photo hunt gallery, by the last "אני כאן": green = exact, yellow = close, red = far */

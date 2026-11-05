@@ -18,8 +18,8 @@ const PAGES = [
   { file: 'photo-gallery.html', title: 'איפה צילמתי?',            icon: '📸', desc: 'מצאו את המקום המדויק שבו צולמה כל תמונה - ירוק כשאתם בדיוק שם, צהוב כשאתם קרובים.' },
   { file: 'color-hunt.html',    title: 'ציד צבעים',                icon: '🎨', desc: 'צלמו בשביל משהו בכל צבע - האתר בודק שהצבע באמת בתמונה.' },
   { file: 'know-place.html',    title: 'הכר את המקום',             icon: '🌳', desc: 'חידון על נחל השופט - המקום שבו אתם מטיילים עכשיו.' },
-  { file: 'quiz.html',         title: 'כמה אתם מכירים את שגיא?', icon: '❓', desc: 'שאלות על שגיא - הוכיחו שאתם באמת מכירים אותו.' },
-  { file: 'memories.html',      title: 'ההחלטות הטובות',          icon: '🌱', desc: 'קחו החלטה טובה לעצמכם, וקראו את ההחלטות שמטיילים אחרים לקחו.' },
+  { file: 'sagi-quiz.html',     title: 'כמה אתם מכירים את שגיא?', icon: '❓', desc: 'שאלות על שגיא - הוכיחו שאתם באמת מכירים אותו.' },
+  { file: 'decisions.html',     title: 'ההחלטות הטובות',          icon: '🌱', desc: 'קחו החלטה טובה לעצמכם, וקראו את ההחלטות שמטיילים אחרים לקחו.' },
   { file: 'progress.html',     title: 'ההתקדמות שלכם',           icon: '📊', desc: 'השיאים שלכם בכל פעילות וההחלטות הטובות שלקחתם עד עכשיו.' },
   { file: 'summary.html',      title: 'סיכום המשחק',             icon: '🌅', desc: 'סוף המשחק - סיכום הפעילויות ומילות סיום.' },
   // { file: 'photos.html', title: 'תמונות', icon: '📷', desc: 'אלבום תמונות.' },
@@ -50,6 +50,25 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
     location.replace('login.html?next=' + encodeURIComponent(page + location.search + location.hash));
     return;
   }
+
+  // Pages renamed since the game started: carry over what this browser already saved
+  // (unlocked pages and the Sagi quiz score) under the new file names.
+  const RENAMED = { 'memories.html': 'decisions.html', 'memory-add.html': 'decisions.html', 'quiz.html': 'sagi-quiz.html' };
+  try {
+    const v = JSON.parse(localStorage.getItem('sagi2026:visited'));
+    if (Array.isArray(v) && v.some(f => RENAMED[f])) {
+      const fixed = v.map(f => RENAMED[f] || f).filter((f, i, a) => a.indexOf(f) === i);
+      localStorage.setItem('sagi2026:visited', JSON.stringify(fixed));
+    }
+    ['', ':best'].forEach(function (end) {
+      const from = 'sagi2026:quiz:quiz.html' + end, to = 'sagi2026:quiz:sagi-quiz.html' + end;
+      const old = localStorage.getItem(from);
+      if (old !== null) {
+        if (localStorage.getItem(to) === null) localStorage.setItem(to, old);
+        localStorage.removeItem(from);
+      }
+    });
+  } catch (e) {}
 
   const icon = document.createElement('link');
   icon.rel = 'icon'; icon.href = 'images/logo.webp';

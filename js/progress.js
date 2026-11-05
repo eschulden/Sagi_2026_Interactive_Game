@@ -12,7 +12,7 @@
     { key: 'colorhunt',               file: 'color-hunt.html' },
     { key: 'quiz:trail-markers.html', file: 'trail-markers.html' },
     { key: 'quiz:know-place.html',    file: 'know-place.html' },
-    { key: 'quiz:quiz.html',          file: 'quiz.html' },
+    { key: 'quiz:sagi-quiz.html',          file: 'sagi-quiz.html' },
   ];
   let visited = null;
   try { visited = JSON.parse(localStorage.getItem('sagi2026:visited')) || []; } catch (e) {}
@@ -35,25 +35,25 @@
 
   const mine = Store.get('decisions') || [];
   const box = document.getElementById('decisions');
-  if (!mine.length && !discovered('memories.html')) {
+  if (!mine.length && !discovered('decisions.html')) {
     box.style.display = 'none';
     if (box.previousElementSibling) box.previousElementSibling.style.display = 'none'; // its heading
   } else if (!mine.length) {
     box.innerHTML = '<div class="card" style="text-align:center"><p>עוד לא לקחתם החלטה טובה.</p>' +
-      '<a class="btn" href="memories.html#add">לקחת החלטה טובה</a></div>';
+      '<a class="btn" href="decisions.html#add">לקחת החלטה טובה</a></div>';
   } else {
     box.className = 'decisions-wall';
     const cards = mine.map(function (d) {
       const card = document.createElement('div');
-      card.className = 'card memory-card';
+      card.className = 'card decision-card';
       const p = document.createElement('p');
       p.textContent = d.text;
       card.appendChild(p);
       return card;
     });
     const more = document.createElement('a');
-    more.className = 'card memory-card add-card';
-    more.href = 'memories.html#add';
+    more.className = 'card decision-card add-card';
+    more.href = 'decisions.html#add';
     more.innerHTML = '<p>✍️ קחו עוד החלטה טובה</p>';
     cards.push(more);
 

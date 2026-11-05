@@ -1,16 +1,16 @@
 /*
- * memories.html: the wall of good decisions (from the Google Sheet), plus a card (modal)
+ * decisions.html: the wall of good decisions (from the Google Sheet), plus a card (modal)
  * with the form for taking a new decision. The card opens from the "קחו החלטה" button,
  * or on load when the address ends with #add (used by the progress/summary links).
  */
 (function () {
-  const C = window.MEMORIES;
-  const root = document.getElementById('memories');
+  const C = window.DECISIONS;
+  const root = document.getElementById('decisions-root');
   let modal, body, wallEl, lastFocus;
 
   function notConfigured(el) {
     el.innerHTML = '<div class="card"><p>החיבור ל-Google Sheets עדיין לא הוגדר. ' +
-      'מלאו את הערכים ב-<code>data/memories-config.js</code>.</p></div>';
+      'מלאו את הערכים ב-<code>data/decisions-config.js</code>.</p></div>';
   }
 
   // ---- The "take a decision" card ----
@@ -100,7 +100,7 @@
   // Loaded as a <script> (JSONP) instead of fetch: no CORS, so it also works when opened from file://
   // Calls ok(rows) with the non-empty rows, newest first. Columns: timestamp, name, text.
   function loadRows(ok, fail) {
-    const cb = '__memoriesCb' + Date.now();
+    const cb = '__decisionsCb' + Date.now();
     window[cb] = function (resp) {
       delete window[cb];
       if (!resp || resp.status !== 'ok') return fail();
@@ -115,19 +115,19 @@
 
   function card(text, name, when, i) {
     const card = document.createElement('div');
-    card.className = 'card memory-card';
+    card.className = 'card decision-card';
     card.style.animationDelay = Math.min(i, 8) * 60 + 'ms';
     const p = document.createElement('p');
     p.textContent = text;
     card.appendChild(p);
     const by = document.createElement('div');
-    by.className = 'memory-by';
+    by.className = 'decision-by';
     const who = document.createElement('span');
     who.textContent = name || 'אנונימי';
     by.appendChild(who);
     if (when) {
       const d = document.createElement('span');
-      d.className = 'memory-date';
+      d.className = 'decision-date';
       d.textContent = when;
       by.appendChild(d);
     }
@@ -151,7 +151,7 @@
     if (wallEl && wallEl.isConnected) return wallEl;
     root.innerHTML = '';
     wallEl = document.createElement('div');
-    wallEl.className = 'memories-wall';
+    wallEl.className = 'decisions-board';
     root.appendChild(wallEl);
     return wallEl;
   }
@@ -170,7 +170,7 @@
     root.innerHTML = '<p class="lead" style="text-align:center">טוען החלטות...</p>';
     loadRows(function (rows) {
       root.innerHTML = '';
-      if (!rows.length) { root.innerHTML = '<div class="card memory-empty"><p>עדיין אין החלטות. אפשר להיות הראשונים.</p></div>'; return; }
+      if (!rows.length) { root.innerHTML = '<div class="card decision-empty"><p>עדיין אין החלטות. אפשר להיות הראשונים.</p></div>'; return; }
       total = rows.length;
       setCount();
       const w = ensureWall();
