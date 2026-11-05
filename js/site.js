@@ -87,8 +87,8 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
     return a.outerHTML;
   })();
 
-  // "Scan QR" button in the header (see QrScan below)
-  const QR_BTN = '<button class="qr-btn" id="qr-scan-btn" type="button" aria-label="סריקת קוד QR">' +
+  // "Scan QR" button in the header (see QrScan below); not on the group-name page
+  const QR_BTN = current === 'login.html' ? '' : '<button class="qr-btn" id="qr-scan-btn" type="button" aria-label="סריקת קוד QR">' +
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M7 12h10"/></svg>' +
     '<span>סריקה</span></button>';
 
@@ -130,7 +130,8 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
     });
     overlay.addEventListener('click', closeDrawer);
     drawer.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeDrawer); });
-    document.getElementById('qr-scan-btn').addEventListener('click', function () { QrScan.open(); });
+    const qrBtn = document.getElementById('qr-scan-btn');
+    if (qrBtn) qrBtn.addEventListener('click', function () { QrScan.open(); });
   }
 
   const footer = document.getElementById('site-footer');
