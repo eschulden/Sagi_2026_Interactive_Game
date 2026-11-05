@@ -120,7 +120,6 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
     header.innerHTML =
       '<div class="inner">' +
         '<a class="site-title" href="main.html"><img src="images/logo.webp" alt="' + SITE_TITLE + '"></a>' +
-        '<nav class="site-nav" id="site-nav">' + navLinks + '</nav>' +
         '<div class="header-actions">' + QR_BTN + groupChip +
           '<button class="hamburger" id="hamburger" aria-label="תפריט" aria-expanded="false">&#9776;</button>' +
         '</div>' +

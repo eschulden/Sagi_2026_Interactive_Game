@@ -51,23 +51,14 @@ a { color: var(--accent-dark); }
   margin: 0 auto;
   padding: 10px 16px;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  justify-content: space-between;
   align-items: center;
   gap: 8px 20px;
 }
 .site-title { display: block; line-height: 0; }
 .site-title img { height: 54px; width: auto; display: block; }
 .hero .logo { width: min(520px, 90%); height: auto; display: block; margin: 0 auto 6px; }
-.site-nav { display: flex; flex-wrap: wrap; gap: 6px; }
-.site-nav a {
-  text-decoration: none;
-  color: var(--ink);
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: .95rem;
-}
-.site-nav a:hover { background: var(--soft); }
-.site-nav a.active { background: var(--accent); color: #fff; }
 
 /* group name chip (opens login.html to rename) */
 .group-chip {
@@ -94,7 +85,6 @@ a { color: var(--accent-dark); }
 .qr-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
 /* phones: keep the header on one row - icon-only scan button, chip shrinks */
 @media (max-width: 680px) {
-  .site-header .inner { flex-wrap: nowrap; }
   .header-actions .group-chip { min-width: 0; max-width: none; flex-shrink: 1; }
 }
 @media (max-width: 440px) {
@@ -147,9 +137,9 @@ a { color: var(--accent-dark); }
 .login .btn { width: 100%; font-size: 1.1rem; }
 .login-error { margin: -8px 0 14px; color: var(--bad); font-size: .95rem; }
 
-/* hamburger button — hidden on desktop */
+/* hamburger button: opens the page menu (drawer) on every screen size */
 .hamburger {
-  display: none;
+  display: block;
   background: none; border: none;
   font-size: 1.5rem; line-height: 1;
   cursor: pointer; color: var(--ink);
@@ -189,11 +179,6 @@ a { color: var(--accent-dark); }
 }
 .nav-overlay.open { display: block; }
 
-@media (max-width: 680px) {
-  .hamburger { display: block; }
-  .site-nav { display: none; }
-  .site-header .inner { justify-content: space-between; }
-}
 
 /* ---------- layout ---------- */
 main { max-width: 1000px; margin: 0 auto; padding: 24px 16px 60px; }
