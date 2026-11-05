@@ -97,6 +97,11 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
     return a.outerHTML;
   })();
 
+  // "Scan QR" button in the header, in every mode (see QrScan below)
+  const QR_BTN = '<button class="qr-btn" id="qr-scan-btn" type="button" aria-label="סריקת קוד QR">' +
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M7 12h10"/></svg>' +
+    '<span>סריקה</span></button>';
+
   const header = document.getElementById('site-header');
   if (header) {
     if (hubMode) {
@@ -109,8 +114,9 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
         '<div class="inner">' +
           '<a class="site-title" href="main.html"><img src="images/logo.webp" alt="' + SITE_TITLE + '"></a>' +
           '<nav class="site-nav" id="site-nav">' + navLinks + '</nav>' +
-          groupChip +
-          '<button class="hamburger" id="hamburger" aria-label="תפריט" aria-expanded="false">&#9776;</button>' +
+          '<div class="header-actions">' + QR_BTN + groupChip +
+            '<button class="hamburger" id="hamburger" aria-label="תפריט" aria-expanded="false">&#9776;</button>' +
+          '</div>' +
         '</div>' +
         '<div class="nav-drawer" id="nav-drawer">' + navLinks + '</div>' +
         '<div class="nav-overlay" id="nav-overlay"></div>';
@@ -139,8 +145,10 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
       // QR / standalone mode: show only the logo, no links
       header.className = 'site-header site-header--standalone';
       header.innerHTML =
-        '<div class="inner"><span class="site-title"><img src="images/logo.webp" alt="' + SITE_TITLE + '"></span>' + groupChip + '</div>';
+        '<div class="inner"><span class="site-title"><img src="images/logo.webp" alt="' + SITE_TITLE + '"></span>' +
+        '<div class="header-actions">' + QR_BTN + groupChip + '</div></div>';
     }
+    document.getElementById('qr-scan-btn').addEventListener('click', function () { QrScan.open(); });
   }
 
   const footer = document.getElementById('site-footer');
@@ -161,4 +169,144 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
       '</h3><p>' + (p.desc || '') + '</p></a>'
     ).join('');
   }
+})();
+
+/*
+ * QR scanner opened from the header button. A scanned link to one of this site's pages
+ * (on this server, or on the published GitHub Pages site) unlocks that page and opens it.
+ * Uses the browser's BarcodeDetector where there is one (Android Chrome), otherwise
+ * jsQR (iPhone Safari), loaded only the first time the scanner opens.
+ */
+window.QrScan = (function () {
+  const JSQR_URL = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+  const PUBLISHED_BASE = 'https://eschulden.github.io/sagi_2026_interactive_game/';
+  const VISITED_KEY = 'sagi2026:visited';
+  let box, video, status, stream, timer, detect, lastBad = '';
+
+  // { file, url } if text is a link to one of the game's pages, else null
+  function gamePage(text) {
+    let u;
+    try { u = new URL(String(text).trim(), location.href); } catch (e) { return null; }
+    const here = (location.origin + location.pathname.replace(/[^/]*$/, '')).toLowerCase();
+    const dir = (u.origin + u.pathname.replace(/[^/]*$/, '')).toLowerCase();
+    if (dir !== here && dir !== PUBLISHED_BASE) return null;
+    const file = u.pathname.split('/').pop() || 'main.html';
+    if (!PAGES.some(p => p.file === file)) return null;
+    return { file: file, url: file + u.search + u.hash };
+  }
+
+  function unlock(file) {
+    try {
+      const v = JSON.parse(localStorage.getItem(VISITED_KEY)) || [];
+      if (v.indexOf(file) === -1) { v.push(file); localStorage.setItem(VISITED_KEY, JSON.stringify(v)); }
+    } catch (e) {}
+  }
+
+  function say(msg, cls) { status.textContent = msg; status.className = 'qr-status' + (cls ? ' ' + cls : ''); }
+
+  function found(text) {
+    const page = gamePage(text);
+    if (!page) {
+      if (text !== lastBad) { lastBad = text; say('הקוד הזה לא שייך למשחק - נסו קוד אחר', 'bad'); }
+      return;
+    }
+    const info = PAGES.find(p => p.file === page.file);
+    say('נפתח! ' + info.icon + ' ' + info.title, 'good');
+    unlock(page.file);
+    stop();
+    setTimeout(function () { location.href = page.url; }, 600);
+  }
+
+  function loadJsQR() {
+    if (window.jsQR) return Promise.resolve();
+    return new Promise(function (ok, fail) {
+      const s = document.createElement('script');
+      s.src = JSQR_URL; s.onload = ok; s.onerror = fail;
+      document.head.appendChild(s);
+    });
+  }
+
+  // Returns an async function that reads one video frame and resolves to the QR text or null
+  async function makeDetector() {
+    if ('BarcodeDetector' in window) {
+      try {
+        const formats = await BarcodeDetector.getSupportedFormats();
+        if (formats.indexOf('qr_code') !== -1) {
+          const d = new BarcodeDetector({ formats: ['qr_code'] });
+          return async function () { const r = await d.detect(video); return r.length ? r[0].rawValue : null; };
+        }
+      } catch (e) {}
+    }
+    await loadJsQR();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    return async function () {
+      const scale = Math.min(1, 640 / Math.max(video.videoWidth, video.videoHeight));
+      canvas.width = Math.round(video.videoWidth * scale);
+      canvas.height = Math.round(video.videoHeight * scale);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const r = window.jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+      return r ? r.data : null;
+    };
+  }
+
+  function build() {
+    box = document.createElement('div');
+    box.className = 'qr-scan';
+    box.innerHTML =
+      '<div class="qr-panel" role="dialog" aria-modal="true" aria-label="סריקת קוד QR">' +
+        '<button class="qr-close" type="button" aria-label="סגירה">&#10005;</button>' +
+        '<h2>סריקת קוד QR</h2>' +
+        '<div class="qr-view"><video playsinline muted></video><div class="qr-frame"></div></div>' +
+        '<p class="qr-status"></p>' +
+      '</div>';
+    document.body.appendChild(box);
+    video = box.querySelector('video');
+    status = box.querySelector('.qr-status');
+    box.querySelector('.qr-close').addEventListener('click', close);
+    box.addEventListener('click', function (e) { if (e.target === box) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && box.classList.contains('open')) close(); });
+  }
+
+  async function open() {
+    if (!box) build();
+    box.classList.add('open');
+    lastBad = '';
+    say('כוונו את המצלמה אל קוד ה-QR');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      say('הדפדפן הזה לא מאפשר שימוש במצלמה. אפשר לסרוק עם אפליקציית המצלמה של הטלפון.', 'bad');
+      return;
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    } catch (e) {
+      say('אין גישה למצלמה. אשרו גישה למצלמה בהגדרות הדפדפן ונסו שוב.', 'bad');
+      return;
+    }
+    if (!box.classList.contains('open')) { stop(); return; } // closed while asking for permission
+    video.srcObject = stream;
+    try { await video.play(); } catch (e) {}
+    try { detect = detect || await makeDetector(); } catch (e) {
+      say('לא הצלחנו לטעון את הסורק. בדקו את החיבור לאינטרנט ונסו שוב.', 'bad');
+      return;
+    }
+    let busy = false;
+    timer = setInterval(async function () {
+      if (busy || !stream || video.readyState < 2) return;
+      busy = true;
+      try { const text = await detect(); if (text && stream) found(text); } catch (e) {}
+      busy = false;
+    }, 200);
+  }
+
+  function stop() {
+    clearInterval(timer); timer = null;
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    if (video) video.srcObject = null;
+  }
+
+  function close() { stop(); box.classList.remove('open'); }
+
+  return { open: open, close: close, gamePage: gamePage };
 })();
