@@ -5,18 +5,18 @@
   const NS = 'http://www.w3.org/2000/svg';
 
   let idx = 0, score = 0, answered = false, hintsUsed = 0;
-  const HINT_COST = 2;
+  const HINT_COST = 1;
   const maxScore = G.places.length * 10;
 
   function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
 
   function pointsFor(km) {
-    if (km <= 10) return 10;
-    if (km <= 25) return 8;
-    if (km <= 50) return 6;
-    if (km <= 100) return 4;
-    if (km <= 150) return 2;
-    return 0;
+    if (km <= 15) return 10;
+    if (km <= 35) return 8;
+    if (km <= 70) return 6;
+    if (km <= 130) return 4;
+    if (km <= 200) return 2;
+    return 1;
   }
 
   function start() {
@@ -105,7 +105,7 @@
     const last = idx === G.places.length - 1;
     document.getElementById('after').innerHTML =
       '<div class="feedback"><strong>' + esc(p.name) + '</strong><br>' +
-      (km < 1 ? 'בול!' : 'פספסתם ב-' + Math.round(km) + ' ק"מ') + (pts ? ' · ' + pts + ' נקודות' + (hintsUsed ? ' (' + (hintsUsed === 1 ? 'עם רמז' : 'עם ' + hintsUsed + ' רמזים') + ')' : '') : '') + '</div>' +
+      (km < 1 ? 'בול!' : (km < 20 ? 'ממש קרוב!' : km < 60 ? 'כמעט!' : 'כיוון טוב!') + ' רק ' + Math.round(km) + ' ק"מ מהמקום') + (pts ? ' · ' + pts + ' נקודות' + (hintsUsed ? ' (' + (hintsUsed === 1 ? 'עם רמז' : 'עם ' + hintsUsed + ' רמזים') + ')' : '') : '') + '</div>' +
       (p.fact ? '<div class="memory">' + esc(p.fact) + '</div>' : '') +
       '<button class="btn" id="next">' + (last ? 'לתוצאה' : 'למקום הבא') + '</button>';
     document.getElementById('next').onclick = () => { idx++; idx < G.places.length ? show() : finish(); };
