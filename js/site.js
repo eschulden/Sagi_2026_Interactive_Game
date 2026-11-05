@@ -1,10 +1,6 @@
 /*
- * Site navigation.
- *
- * TWO MODES:
- *   Hub mode (default): full navigation shown on all pages.
- *   QR / standalone mode: no nav, for QR codes placed on the trail.
- *     Append ?hidden to any URL to suppress the nav (e.g. guess.html?hidden).
+ * Site navigation: header menu (only pages the group has opened so far, see VISITED_KEY),
+ * QR scan button, footer, and the page cards on main.html.
  *
  * To add a new page:
  *   1. Copy page-template.html to a new file (e.g. photos.html)
@@ -52,8 +48,7 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
   let canStore = true;
   try { localStorage.setItem('sagi2026:probe', '1'); localStorage.removeItem('sagi2026:probe'); } catch (e) { canStore = false; }
   if (canStore && !Group.get() && NO_LOGIN.indexOf(page) === -1) {
-    const hidden = location.search.indexOf('hidden') !== -1 ? 'hidden&' : '';
-    location.replace('login.html?' + hidden + 'next=' + encodeURIComponent(page + location.search + location.hash));
+    location.replace('login.html?next=' + encodeURIComponent(page + location.search + location.hash));
     return;
   }
 
@@ -61,12 +56,10 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
   icon.rel = 'icon'; icon.href = 'images/logo.webp';
   document.head.appendChild(icon);
 
-  // Hub mode: nav is shown by default; pass ?hidden to suppress it (for QR codes on trail)
   const current = location.pathname.split('/').pop() || 'main.html';
-  const hubMode = location.search.indexOf('hidden') === -1
-                  && (typeof window.SHOW_NAV === 'undefined' || window.SHOW_NAV !== false);
 
-  // Pages become visible in the menu once visited (any mode, incl. ?hidden), and stay visible.
+  // Pages become visible in the menu once visited (opened directly, from a QR code, or via
+  // the scan button), and stay visible.
   // Opening summary.html (end of the game) makes all of them visible.
   // If storage is blocked, nothing can be remembered, so show everything.
   const VISITED_KEY = 'sagi2026:visited';
@@ -83,89 +76,77 @@ const NO_LOGIN = ['login.html', 'sagi.html', 'about.html', 'all.html'];
   const ALWAYS_VISIBLE = ['main.html', 'about.html', 'sagi.html', 'progress.html'];
   const visible = PAGES.filter(p => ALWAYS_VISIBLE.indexOf(p.file) !== -1 || visited === null || visited.indexOf(p.file) !== -1);
 
-  // Links stay bare — nav is on by default, no need to propagate a param
-  const href = f => f;
-
   // "Group: X" chip in the header; tapping it opens login.html to rename the group
   const group = Group.get();
   const groupChip = !group || current === 'login.html' ? '' : (function () {
     const a = document.createElement('a');
     a.className = 'group-chip';
-    a.href = 'login.html?' + (hubMode ? '' : 'hidden&') + 'next=' + encodeURIComponent(current + location.search);
+    a.href = 'login.html?next=' + encodeURIComponent(current + location.search);
     a.title = 'שינוי שם הקבוצה';
     a.textContent = '👥 ' + group;
     return a.outerHTML;
   })();
 
-  // "Scan QR" button in the header, in every mode (see QrScan below)
+  // "Scan QR" button in the header (see QrScan below)
   const QR_BTN = '<button class="qr-btn" id="qr-scan-btn" type="button" aria-label="סריקת קוד QR">' +
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M7 12h10"/></svg>' +
     '<span>סריקה</span></button>';
 
   const header = document.getElementById('site-header');
   if (header) {
-    if (hubMode) {
-      const navLinks = visible.map(p =>
-        '<a href="' + href(p.file) + '"' + (p.file === current ? ' class="active"' : '') + '>' + p.icon + ' ' + p.title + '</a>'
-      ).join('');
+    const navLinks = visible.map(p =>
+      '<a href="' + p.file + '"' + (p.file === current ? ' class="active"' : '') + '>' + p.icon + ' ' + p.title + '</a>'
+    ).join('');
 
-      header.className = 'site-header';
-      header.innerHTML =
-        '<div class="inner">' +
-          '<a class="site-title" href="main.html"><img src="images/logo.webp" alt="' + SITE_TITLE + '"></a>' +
-          '<nav class="site-nav" id="site-nav">' + navLinks + '</nav>' +
-          '<div class="header-actions">' + QR_BTN + groupChip +
-            '<button class="hamburger" id="hamburger" aria-label="תפריט" aria-expanded="false">&#9776;</button>' +
-          '</div>' +
+    header.className = 'site-header';
+    header.innerHTML =
+      '<div class="inner">' +
+        '<a class="site-title" href="main.html"><img src="images/logo.webp" alt="' + SITE_TITLE + '"></a>' +
+        '<nav class="site-nav" id="site-nav">' + navLinks + '</nav>' +
+        '<div class="header-actions">' + QR_BTN + groupChip +
+          '<button class="hamburger" id="hamburger" aria-label="תפריט" aria-expanded="false">&#9776;</button>' +
         '</div>' +
-        '<div class="nav-drawer" id="nav-drawer">' + navLinks + '</div>' +
-        '<div class="nav-overlay" id="nav-overlay"></div>';
+      '</div>' +
+      '<div class="nav-drawer" id="nav-drawer">' + navLinks + '</div>' +
+      '<div class="nav-overlay" id="nav-overlay"></div>';
 
-      const btn = document.getElementById('hamburger');
-      const drawer = document.getElementById('nav-drawer');
-      const overlay = document.getElementById('nav-overlay');
-      function openDrawer() {
-        drawer.classList.add('open');
-        overlay.classList.add('open');
-        btn.setAttribute('aria-expanded', 'true');
-        btn.innerHTML = '&#10005;';
-      }
-      function closeDrawer() {
-        drawer.classList.remove('open');
-        overlay.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
-        btn.innerHTML = '&#9776;';
-      }
-      btn.addEventListener('click', function () {
-        drawer.classList.contains('open') ? closeDrawer() : openDrawer();
-      });
-      overlay.addEventListener('click', closeDrawer);
-      drawer.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeDrawer); });
-    } else {
-      // QR / standalone mode: show only the logo, no links
-      header.className = 'site-header site-header--standalone';
-      header.innerHTML =
-        '<div class="inner"><span class="site-title"><img src="images/logo.webp" alt="' + SITE_TITLE + '"></span>' +
-        '<div class="header-actions">' + QR_BTN + groupChip + '</div></div>';
+    const btn = document.getElementById('hamburger');
+    const drawer = document.getElementById('nav-drawer');
+    const overlay = document.getElementById('nav-overlay');
+    function openDrawer() {
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      btn.innerHTML = '&#10005;';
     }
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      overlay.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      btn.innerHTML = '&#9776;';
+    }
+    btn.addEventListener('click', function () {
+      drawer.classList.contains('open') ? closeDrawer() : openDrawer();
+    });
+    overlay.addEventListener('click', closeDrawer);
+    drawer.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeDrawer); });
     document.getElementById('qr-scan-btn').addEventListener('click', function () { QrScan.open(); });
   }
 
   const footer = document.getElementById('site-footer');
   if (footer) {
     footer.className = 'site-footer';
-    // "על שגיא" button appears on every page in every mode
-    const sagiHref = hubMode ? 'sagi.html' : 'sagi.html?hidden';
+    // "על שגיא" button appears on every page
     const sagiBtn = current === 'sagi.html' ? '' :
-      '<a href="' + sagiHref + '" class="sagi-footer-btn">🌿 על שגיא</a>';
+      '<a href="sagi.html" class="sagi-footer-btn">🌿 על שגיא</a>';
     footer.innerHTML = sagiBtn + '<div class="footer-copy">' + SITE_TITLE + ' · 2026</div>';
   }
 
-  // Page cards: only on main.html (hub mode)
+  // Page cards: only on main.html
   const grid = document.getElementById('page-cards');
   if (grid) {
     grid.innerHTML = visible.filter(p => p.file !== 'main.html').map(p =>
-      '<a class="page-card" href="' + href(p.file) + '"><div class="icon">' + p.icon + '</div><h3>' + p.title +
+      '<a class="page-card" href="' + p.file + '"><div class="icon">' + p.icon + '</div><h3>' + p.title +
       '</h3><p>' + (p.desc || '') + '</p></a>'
     ).join('');
   }

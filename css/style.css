@@ -68,9 +68,6 @@ a { color: var(--accent-dark); }
 }
 .site-nav a:hover { background: var(--soft); }
 .site-nav a.active { background: var(--accent); color: #fff; }
-/* standalone mode: logo centred, no nav links */
-.site-header--standalone .inner { justify-content: center; }
-.site-header--standalone .site-title img { height: 46px; }
 
 /* group name chip (opens login.html to rename) */
 .group-chip {

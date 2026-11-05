@@ -2,7 +2,6 @@
 (function () {
   const H = window.PHOTO_HUNT;
   const root = document.getElementById('photo-gallery');
-  const hidden = location.search.indexOf('hidden') !== -1 ? '&hidden' : '';
 
   function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
@@ -17,7 +16,7 @@
         else if (pts > 0) { cls = ' near'; label = '🟡 קרוב · ' + pts + ' נקודות'; }
         else { cls = ' missed'; label = '🔴 רחוק'; }
       }
-      return '<a class="photo-tile' + cls + '" href="photo-hunt.html?photo=' + (i + 1) + hidden + '">' +
+      return '<a class="photo-tile' + cls + '" href="photo-hunt.html?photo=' + (i + 1) + '">' +
         '<img src="' + esc(p.image) + '" alt="תמונה ' + (i + 1) + '" loading="lazy">' +
         '<span class="photo-tile-label"><strong>תמונה ' + (i + 1) + '</strong>' + label + '</span></a>';
     }).join('');

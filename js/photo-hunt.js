@@ -8,7 +8,7 @@
   // The game is played one photo at a time: ?photo=N, opened from photo-gallery.html
   const pick = /[?&]photo=(\d+)/.exec(location.search);
   const single = pick && +pick[1] >= 1 && +pick[1] <= H.photos.length ? +pick[1] - 1 : null;
-  const gallery = 'photo-gallery.html' + (location.search.indexOf('hidden') !== -1 ? '?hidden' : '');
+  const gallery = 'photo-gallery.html';
 
   // Result of the last "אני כאן" per photo, keyed by image path: 10 = exact (green), 5 = close (yellow),
   // 0 = far (red). The gallery colors tiles by it.
