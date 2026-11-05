@@ -1,49 +1,90 @@
+/*
+ * memories.html: the wall of good decisions (from the Google Sheet), plus a card (modal)
+ * with the form for taking a new decision. The card opens from the "קחו החלטה" button,
+ * or on load when the address ends with #add (used by the progress/summary links).
+ */
 (function () {
   const C = window.MEMORIES;
   const root = document.getElementById('memories');
-  const mode = root.dataset.mode; // 'add' | 'wall'
+  let modal, body, wallEl, lastFocus;
 
-  function notConfigured() {
-    root.innerHTML = '<div class="card"><p>החיבור ל-Google Sheets עדיין לא הוגדר. ' +
+  function notConfigured(el) {
+    el.innerHTML = '<div class="card"><p>החיבור ל-Google Sheets עדיין לא הוגדר. ' +
       'מלאו את הערכים ב-<code>data/memories-config.js</code>.</p></div>';
   }
 
-  function add() {
-    if (!C.FORM_URL || !C.FIELD_TEXT) return notConfigured();
-    root.innerHTML = '<div class="card"><form id="mem-form">' +
+  // ---- The "take a decision" card ----
+
+  function buildModal() {
+    modal = document.createElement('div');
+    modal.className = 'mem-modal';
+    modal.innerHTML =
+      '<div class="mem-panel" role="dialog" aria-modal="true" aria-labelledby="mem-title">' +
+        '<button class="mem-close" type="button" aria-label="סגירה">&#10005;</button>' +
+        '<h2 id="mem-title">קחו החלטה טובה לעצמכם</h2>' +
+        '<div class="mem-body"></div>' +
+      '</div>';
+    document.body.appendChild(modal);
+    body = modal.querySelector('.mem-body');
+    modal.querySelector('.mem-close').addEventListener('click', closeModal);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+  }
+
+  function openModal() {
+    if (!modal) buildModal();
+    lastFocus = document.activeElement;
+    form();
+    modal.classList.add('open');
+    document.body.classList.add('modal-open');
+    const ta = document.getElementById('mem-text');
+    if (ta) ta.focus();
+  }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    document.body.classList.remove('modal-open');
+    if (location.hash === '#add') history.replaceState(null, '', location.pathname + location.search);
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  function form() {
+    if (!C.FORM_URL || !C.FIELD_TEXT) return notConfigured(body);
+    body.innerHTML = '<p class="mem-lead">הטיול כאן הוא הזדמנות לעצור רגע. כתבו החלטה טובה שאתם לוקחים לעצמכם, והיא תישמר ותופיע כאן.</p>' +
+      '<form id="mem-form" class="mem-form">' +
       '<label>שם<input id="mem-name" maxlength="' + C.MAX_NAME + '" autocomplete="off" required></label>' +
-      '<label>ההחלטה הטובה שלכם<textarea id="mem-text" rows="6" maxlength="' + C.MAX_TEXT + '" required></textarea><div class="mem-counter" id="mem-counter">0 / ' + C.MAX_TEXT + '</div></label>' +
+      '<label>ההחלטה הטובה שלכם<textarea id="mem-text" rows="5" maxlength="' + C.MAX_TEXT + '" required></textarea><div class="mem-counter" id="mem-counter">0 / ' + C.MAX_TEXT + '</div></label>' +
       '<input id="mem-hp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<button class="btn" id="mem-send" type="submit">שליחה</button>' +
-      '<div id="mem-msg" class="feedback" style="display:none"></div></form></div>' +
-      '<div id="mem-recent" class="memories-recent-box"></div>';
-    recent(document.getElementById('mem-recent'));
+      '<div id="mem-msg" class="feedback" style="display:none"></div></form>';
     document.getElementById('mem-name').value = Group.get().slice(0, C.MAX_NAME);
-    const form = document.getElementById('mem-form');
     const ta = document.getElementById('mem-text');
     ta.oninput = function () { document.getElementById('mem-counter').textContent = ta.value.length + ' / ' + C.MAX_TEXT; };
-    form.onsubmit = function (e) {
+    document.getElementById('mem-form').onsubmit = function (e) {
       e.preventDefault();
-      const text = document.getElementById('mem-text').value.trim();
+      const text = ta.value.trim();
       const name = document.getElementById('mem-name').value.trim();
       if (!name || !text || document.getElementById('mem-hp').value) return;
-      const body = new URLSearchParams();
-      if (C.FIELD_NAME) body.set(C.FIELD_NAME, name);
-      body.set(C.FIELD_TEXT, text);
+      const data = new URLSearchParams();
+      if (C.FIELD_NAME) data.set(C.FIELD_NAME, name);
+      data.set(C.FIELD_TEXT, text);
       const btn = document.getElementById('mem-send');
       btn.disabled = true;
       // no-cors: the response is opaque, so success can't be confirmed from here
-      fetch(C.FORM_URL, { method: 'POST', mode: 'no-cors', body: body })
+      fetch(C.FORM_URL, { method: 'POST', mode: 'no-cors', body: data })
         .then(function () {
-          // Keep my own decisions in this browser, for the summary page
+          // Keep my own decisions in this browser, for the progress and summary pages
           const mine = Store.get('decisions') || [];
           mine.push({ name: name, text: text });
           Store.set('decisions', mine);
-          root.innerHTML = '<div class="card" style="text-align:center"><h2>תודה ❤️</h2>' +
-            '<p class="lead">ההחלטה נשמרה. היא תופיע בעמוד ההחלטות בקרוב.</p>' +
-            '<div class="btn-row"><a class="btn" href="memories.html">לעמוד ההחלטות</a>' +
-            '<button class="btn secondary" id="again">עוד החלטה</button></div></div>';
-          document.getElementById('again').onclick = add;
+          addToWall(name, text);
+          body.innerHTML = '<div style="text-align:center"><p class="mem-thanks">תודה ❤️</p>' +
+            '<p class="lead">ההחלטה נשמרה ונוספה לקיר ההחלטות.</p>' +
+            '<div class="btn-row"><button class="btn" id="mem-done" type="button">לקיר ההחלטות</button>' +
+            '<button class="btn secondary" id="mem-again" type="button">עוד החלטה</button></div></div>';
+          document.getElementById('mem-done').onclick = closeModal;
+          document.getElementById('mem-again').onclick = function () { form(); document.getElementById('mem-text').focus(); };
+          document.getElementById('mem-done').focus();
         })
         .catch(function () {
           btn.disabled = false;
@@ -53,6 +94,8 @@
         });
     };
   }
+
+  // ---- The wall ----
 
   // Loaded as a <script> (JSONP) instead of fetch: no CORS, so it also works when opened from file://
   // Calls ok(rows) with the non-empty rows, newest first. Columns: timestamp, name, text.
@@ -70,20 +113,18 @@
     document.head.appendChild(s);
   }
 
-  function card(r, i) {
+  function card(text, name, when, i) {
     const card = document.createElement('div');
     card.className = 'card memory-card';
     card.style.animationDelay = Math.min(i, 8) * 60 + 'ms';
     const p = document.createElement('p');
-    p.textContent = r.c[2].v;
+    p.textContent = text;
     card.appendChild(p);
     const by = document.createElement('div');
     by.className = 'memory-by';
     const who = document.createElement('span');
-    who.textContent = (r.c[1] && String(r.c[1].v || '').trim()) || 'אנונימי';
+    who.textContent = name || 'אנונימי';
     by.appendChild(who);
-    // "11/4/2026 19:49:53" -> "11/4/2026 19:49"
-    const when = r.c[0] && r.c[0].f ? r.c[0].f.replace(/(\d+:\d+):\d+$/, '$1') : '';
     if (when) {
       const d = document.createElement('span');
       d.className = 'memory-date';
@@ -94,41 +135,52 @@
     return card;
   }
 
-  // The last 3 decisions, under the form on the add page. Stays hidden if loading fails.
-  function recent(box) {
-    if (!C.SHEET_ID || !box) return;
-    loadRows(function (rows) {
-      if (!rows.length) return;
-      const h = document.createElement('h2');
-      h.textContent = 'מה אחרים כתבו לאחרונה';
-      box.appendChild(h);
-      const list = document.createElement('div');
-      list.className = 'memories-recent';
-      rows.slice(0, 3).forEach(function (r, i) { list.appendChild(card(r, i)); });
-      box.appendChild(list);
-      const more = document.createElement('div');
-      more.className = 'btn-row';
-      more.innerHTML = '<a class="btn secondary" href="memories.html">לכל ההחלטות</a>';
-      box.appendChild(more);
-    }, function () {});
+  function rowCard(r, i) {
+    // "11/4/2026 19:49:53" -> "11/4/2026 19:49"
+    const when = r.c[0] && r.c[0].f ? r.c[0].f.replace(/(\d+:\d+):\d+$/, '$1') : '';
+    return card(r.c[2].v, r.c[1] && String(r.c[1].v || '').trim(), when, i);
+  }
+
+  let total = 0;
+  function setCount() {
+    const count = document.getElementById('mem-count');
+    if (count) count.textContent = !total ? '' : total === 1 ? 'עד עכשיו נלקחה החלטה טובה אחת' : 'עד עכשיו נלקחו ' + total + ' החלטות טובות';
+  }
+
+  function ensureWall() {
+    if (wallEl && wallEl.isConnected) return wallEl;
+    root.innerHTML = '';
+    wallEl = document.createElement('div');
+    wallEl.className = 'memories-wall';
+    root.appendChild(wallEl);
+    return wallEl;
+  }
+
+  // A decision just sent: shown at the top right away (the sheet takes a moment to update)
+  function addToWall(name, text) {
+    if (!C.SHEET_ID) return;
+    const w = ensureWall();
+    w.insertBefore(card(text, name, 'עכשיו', 0), w.firstChild);
+    total++;
+    setCount();
   }
 
   function wall() {
-    if (!C.SHEET_ID) return notConfigured();
-    root.innerHTML = '<p class="lead">טוען זיכרונות...</p>';
+    if (!C.SHEET_ID) return notConfigured(root);
+    root.innerHTML = '<p class="lead" style="text-align:center">טוען החלטות...</p>';
     loadRows(function (rows) {
       root.innerHTML = '';
       if (!rows.length) { root.innerHTML = '<div class="card memory-empty"><p>עדיין אין החלטות. אפשר להיות הראשונים.</p></div>'; return; }
-      const count = document.getElementById('mem-count');
-      if (count) count.textContent = rows.length === 1 ? 'החלטה אחת' : rows.length + ' החלטות';
-      const wall = document.createElement('div');
-      wall.className = 'memories-wall';
-      root.appendChild(wall);
-      rows.forEach(function (r, i) { wall.appendChild(card(r, i)); });
+      total = rows.length;
+      setCount();
+      const w = ensureWall();
+      rows.forEach(function (r, i) { w.appendChild(rowCard(r, i)); });
     }, function () {
       root.innerHTML = '<div class="card"><p>לא הצלחנו לטעון את ההחלטות. נסו לרענן.</p></div>';
     });
   }
 
-  mode === 'add' ? add() : wall();
+  document.getElementById('mem-open').addEventListener('click', openModal);
+  wall();
+  if (location.hash === '#add') openModal();
 })();

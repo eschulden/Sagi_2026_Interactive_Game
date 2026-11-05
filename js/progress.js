@@ -35,12 +35,12 @@
 
   const mine = Store.get('decisions') || [];
   const box = document.getElementById('decisions');
-  if (!mine.length && !discovered('memory-add.html')) {
+  if (!mine.length && !discovered('memories.html')) {
     box.style.display = 'none';
     if (box.previousElementSibling) box.previousElementSibling.style.display = 'none'; // its heading
   } else if (!mine.length) {
     box.innerHTML = '<div class="card" style="text-align:center"><p>עוד לא לקחתם החלטה טובה.</p>' +
-      '<a class="btn" href="memory-add.html">לקחת החלטה טובה</a></div>';
+      '<a class="btn" href="memories.html#add">לקחת החלטה טובה</a></div>';
   } else {
     box.className = 'decisions-wall';
     const cards = mine.map(function (d) {
@@ -53,7 +53,7 @@
     });
     const more = document.createElement('a');
     more.className = 'card memory-card add-card';
-    more.href = 'memory-add.html';
+    more.href = 'memories.html#add';
     more.innerHTML = '<p>✍️ קחו עוד החלטה טובה</p>';
     cards.push(more);
 
