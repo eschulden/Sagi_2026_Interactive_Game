@@ -19,19 +19,37 @@ window.PHOTO_HUNT = {
     {
       image: 'images/photo-hunt/1.jpg',
       hint: '',
-      lat: 32.082643, lon: 34.863034,
+      lat: 32.636655, lon: 35.111350,
       fact: ''
     },
     {
       image: 'images/photo-hunt/2.jpg',
       hint: '',
-      lat: 32.104865, lon: 34.930542,
+      lat: 32.639044, lon: 35.113186,
       fact: ''
     },
     {
       image: 'images/photo-hunt/3.jpg',
       hint: '',
-      lat: 32.082661, lon: 34.863030,
+      lat: 32.639369, lon: 35.114943,
+      fact: ''
+    },
+    {
+      image: 'images/photo-hunt/4.jpg',
+      hint: '',
+      lat: 32.639277, lon: 35.114578,
+      fact: ''
+    },
+    {
+      image: 'images/photo-hunt/5.jpg',
+      hint: '',
+      lat: 32.639701, lon: 35.113365,
+      fact: ''
+    },
+    {
+      image: 'images/photo-hunt/6.jpg',
+      hint: '',
+      lat: 32.636336, lon: 35.112177,
       fact: ''
     }
   ]
