@@ -267,7 +267,7 @@ h1, h2, h3 { font-weight: 400; }
 
 /* ---------- game ---------- */
 .game-layout { display: grid; grid-template-columns: 260px 1fr; gap: 20px; align-items: start; }
-.map-wrap { background: #dff0f5; border-radius: var(--radius); box-shadow: var(--shadow); padding: 8px; }
+.map-wrap { background: #dff0f5; border-radius: var(--radius); box-shadow: var(--shadow); padding: 8px; scroll-margin-top: 80px; }
 .map-wrap svg { width: 100%; height: auto; display: block; }
 .sea { fill: #bfe1ee; }
 .neighbour { fill: #e6e0d6; stroke: #c9c0b0; stroke-width: .8; }
@@ -287,12 +287,17 @@ h1, h2, h3 { font-weight: 400; }
   transition: opacity .3s; animation: nudge 1.6s ease-in-out infinite; }
 .scroll-down:hover, .scroll-down:focus-visible { opacity: .9; }
 .scroll-down.gone { opacity: 0; pointer-events: none; }
+/* "↑ to the map" link at the bottom of the guess card; only needed when the map is stacked above */
+.to-map { display: none; margin: 14px auto 0; background: none; border: 0; padding: 4px 10px;
+  color: var(--muted, #777); font: inherit; font-size: .9rem; cursor: pointer; opacity: .8; }
+.to-map:hover, .to-map:focus-visible { opacity: 1; text-decoration: underline; }
 @keyframes nudge { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 5px); } }
 
 @media (max-width: 720px) {
   body { font-size: 17px; }
   .game-layout { grid-template-columns: 1fr; }
   .map-wrap { max-width: 260px; margin: 0 auto; }
+  .to-map { display: block; }
   h1 { font-size: 1.6rem; }
 }
 
@@ -417,7 +422,7 @@ a.btn { display: inline-block; text-decoration: none; }
 .stats:has(.back-link) { align-items: center; margin-bottom: 12px; }
 @media (max-width: 420px) { .photo-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
 
-/* Photo hunt results: green = exact, yellow = close, red = far */
+/* Photo hunt and map-guess results: green = exact/close, yellow = almost, red = far */
 .feedback .result-title { display: block; font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
 .feedback.found { background: #e8f6ee; border-right: 5px solid var(--good); }
 .feedback.near { background: #fff6d6; border-right: 5px solid #d9a400; }

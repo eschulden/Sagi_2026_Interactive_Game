@@ -41,8 +41,12 @@
       (p.image ? '<img src="' + esc(p.image) + '" alt="" style="width:100%;border-radius:12px;margin-bottom:12px">' : '') +
       '<h2>איפה זה?</h2><p>' + esc(p.clue) + '</p><ul class="hints" id="hints"></ul>' +
       (p.hints && p.hints.length ? '<button class="btn secondary" id="hintBtn"></button>' : '') +
-      '<p class="lead" id="hint">לחצו על המפה כדי לסמן את הניחוש.</p><div id="after"></div></div></div>';
+      '<p class="lead" id="hint">לחצו על המפה כדי לסמן את הניחוש.</p><div id="after"></div>' +
+      '<button class="to-map" id="toMap" type="button">↑ למפה</button></div></div>';
     document.getElementById('gmap').addEventListener('click', onMapClick);
+    document.getElementById('toMap').onclick = () =>
+      document.querySelector('.map-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!introScrolled) { introScrolled = true; slowScrollTo(root.querySelector('.game-layout > .card')); }
     const hb = document.getElementById('hintBtn');
     if (hb) {
       const label = () => { hb.textContent = '💡 רמז נוסף (מחיר: ' + HINT_COST + ' נקודות)'; };
@@ -54,6 +58,34 @@
         if (hintsUsed >= p.hints.length) hb.remove();
       };
     }
+  }
+
+  // Phone layout (card stacked under the map): after a pause, glide slowly down to el.
+  // Used for the clue card on the first place of a visit, and for the result after every guess.
+  // Stops if the player touches or scrolls meanwhile.
+  let introScrolled = false;
+  function slowScrollTo(el, delay) {
+    const HEADER = 80, DELAY = delay || 700, DURATION = 1800;
+    let cancelled = false, raf = 0;
+    const stop = () => { cancelled = true; cancelAnimationFrame(raf); };
+    const opts = { once: true, passive: true };
+    ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(t => window.addEventListener(t, stop, opts));
+    setTimeout(function () {
+      const from = window.scrollY;
+      const to = Math.min(from + el.getBoundingClientRect().top - HEADER,
+        document.documentElement.scrollHeight - window.innerHeight);
+      const map = root.querySelector('.map-wrap');
+      const stacked = map && el.getBoundingClientRect().top >= map.getBoundingClientRect().bottom;
+      if (cancelled || !document.body.contains(el) || !stacked || to - from < 40) return;
+      const t0 = performance.now();
+      const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      (function step(now) {
+        if (cancelled) return;
+        const t = Math.min(1, (now - t0) / DURATION);
+        window.scrollTo(0, from + (to - from) * ease(t));
+        if (t < 1) raf = requestAnimationFrame(step);
+      })(t0);
+    }, DELAY);
   }
 
   function mark(svg, x, y, color, r) {
@@ -104,12 +136,14 @@
     document.getElementById('hint').remove();
     const last = idx === G.places.length - 1;
     document.getElementById('after').innerHTML =
-      '<div class="feedback"><strong>' + esc(p.name) + '</strong><br>' +
+      // Same distance bands as the message: close = green, almost = yellow, far = red
+      '<div class="feedback ' + (km < 20 ? 'found' : km < 60 ? 'near' : 'far') + '"><strong>' + esc(p.name) + '</strong><br>' +
       (km < 1 ? 'בול!' : (km < 20 ? 'ממש קרוב!' : km < 60 ? 'כמעט!' : 'כיוון טוב!') + ' רק ' + Math.round(km) + ' ק"מ מהמקום') + (pts ? ' · ' + pts + ' נקודות' + (hintsUsed ? ' (' + (hintsUsed === 1 ? 'עם רמז' : 'עם ' + hintsUsed + ' רמזים') + ')' : '') : '') + '</div>' +
       (p.fact ? '<div class="memory">' + esc(p.fact) + '</div>' : '') +
       '<button class="btn" id="next">' + (last ? 'לתוצאה' : 'למקום הבא') + '</button>';
     const next = document.getElementById('next');
     const arrow = scrollArrow(next);
+    slowScrollTo(document.querySelector('#after .feedback'), 1000); // let them see the line on the map first
     next.onclick = () => { arrow(); idx++; idx < G.places.length ? show() : finish(); };
   }
 
