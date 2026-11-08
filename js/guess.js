@@ -108,7 +108,23 @@
       (km < 1 ? 'בול!' : (km < 20 ? 'ממש קרוב!' : km < 60 ? 'כמעט!' : 'כיוון טוב!') + ' רק ' + Math.round(km) + ' ק"מ מהמקום') + (pts ? ' · ' + pts + ' נקודות' + (hintsUsed ? ' (' + (hintsUsed === 1 ? 'עם רמז' : 'עם ' + hintsUsed + ' רמזים') + ')' : '') : '') + '</div>' +
       (p.fact ? '<div class="memory">' + esc(p.fact) + '</div>' : '') +
       '<button class="btn" id="next">' + (last ? 'לתוצאה' : 'למקום הבא') + '</button>';
-    document.getElementById('next').onclick = () => { idx++; idx < G.places.length ? show() : finish(); };
+    const next = document.getElementById('next');
+    const arrow = scrollArrow(next);
+    next.onclick = () => { arrow(); idx++; idx < G.places.length ? show() : finish(); };
+  }
+
+  // Small faded ↓ at the bottom of the screen while the result is off-screen; tap scrolls to it.
+  // Returns a function that removes it.
+  function scrollArrow(target) {
+    const btn = document.createElement('button');
+    btn.className = 'scroll-down gone';
+    btn.setAttribute('aria-label', 'גללו לתוצאה');
+    btn.textContent = '↓';
+    btn.onclick = () => target.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    document.body.appendChild(btn);
+    const io = new IntersectionObserver(es => btn.classList.toggle('gone', es[0].isIntersecting));
+    io.observe(target);
+    return () => { io.disconnect(); btn.remove(); };
   }
 
   function finish() {
