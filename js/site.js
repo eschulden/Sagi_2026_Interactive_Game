@@ -34,7 +34,12 @@ window.Group = (function () {
   function html() { return get().replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   // End-of-game title: "כל הכבוד, <group>!"
   function cheer() { return get() ? 'כל הכבוד, ' + html() + '!' : 'סיימתם!'; }
-  return { get: get, set: set, html: html, cheer: cheer };
+  // End-of-game note: carry on along the trail, with a link to the progress page
+  function nextStop() {
+    return '<div class="next-stop"><p>🚶 עכשיו המשיכו במסלול עד לפעילות הבאה</p>' +
+      '<a class="btn secondary" href="progress.html">ההתקדמות שלי</a></div>';
+  }
+  return { get: get, set: set, html: html, cheer: cheer, nextStop: nextStop };
 })();
 
 // Pages that open without a group name (info pages, and the login page itself)

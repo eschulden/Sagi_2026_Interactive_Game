@@ -67,7 +67,7 @@
     root.innerHTML = '<div class="card" style="text-align:center"><h2>' + Group.cheer() + '</h2>' +
       '<p style="font-size:2.4rem;margin:0">❤️</p>' +
       '<p>ענית נכון על <strong>' + score + ' מתוך ' + Q.questions.length + '</strong> · שיא: ' + best + '</p>' +
-      '<p class="lead">' + esc(end.text) + '</p><button class="btn" id="again">שוב</button></div>';
+      '<p class="lead">' + esc(end.text) + '</p><button class="btn" id="again">שוב</button>' + Group.nextStop() + '</div>';
     document.getElementById('again').onclick = start;
   }
 

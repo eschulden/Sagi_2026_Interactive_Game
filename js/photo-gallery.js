@@ -22,7 +22,9 @@
     }).join('');
     root.innerHTML = '<p class="lead">' + esc(H.intro) + '</p>' +
       '<p class="photo-count">נמצאו <strong>' + found + '</strong> מתוך ' + H.photos.length + '</p>' +
-      '<div class="photo-grid">' + tiles + '</div>';
+      '<div class="photo-grid">' + tiles + '</div>' +
+      (found === H.photos.length ? '<div class="card" style="text-align:center;margin-top:16px"><h2>' + Group.cheer() + '</h2>' +
+        '<p>מצאתם את כל התמונות!</p>' + Group.nextStop() + '</div>' : '');
   }
 
   render();

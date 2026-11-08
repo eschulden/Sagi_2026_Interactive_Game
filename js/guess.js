@@ -118,7 +118,7 @@
     const best = Store.finish('guess', score);
     root.innerHTML = '<div class="card" style="text-align:center"><h2>' + Group.cheer() + '</h2>' +
       '<p style="font-size:2.4rem;margin:0">📍</p><h2>' + esc(end.title) + '</h2><p class="lead">' + esc(end.text) +
-      '</p><p>ניקוד: <strong>' + score + ' מתוך ' + maxScore + '</strong> · שיא: ' + best + '</p><button class="btn" id="again">שוב</button></div>';
+      '</p><p>ניקוד: <strong>' + score + ' מתוך ' + maxScore + '</strong> · שיא: ' + best + '</p><button class="btn" id="again">שוב</button>' + Group.nextStop() + '</div>';
     document.getElementById('again').onclick = start;
   }
 

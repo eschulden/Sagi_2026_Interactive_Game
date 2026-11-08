@@ -336,7 +336,9 @@
     root.innerHTML = '<p class="lead">' + esc(C.intro) + '</p>' +
       '<p class="photo-count">' + (found === C.colors.length ? '🎉 מצאתם את כל הצבעים!' :
         'מצאתם <strong>' + found + '</strong> מתוך ' + C.colors.length + ' צבעים') + '</p>' +
-      '<div class="photo-grid">' + tiles + '</div>';
+      '<div class="photo-grid">' + tiles + '</div>' +
+      (found === C.colors.length ? '<div class="card" style="text-align:center;margin-top:16px"><h2>' + Group.cheer() + '</h2>' +
+        Group.nextStop() + '</div>' : '');
   }
 
   // status: optional message shown under the picker, e.g. the result of the last upload
