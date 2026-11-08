@@ -60,7 +60,8 @@
     }
   }
 
-  // Phone layout (card stacked under the map): after a pause, glide slowly down to el.
+  // Phone layout (card stacked under the map): after a pause, glide slowly down to el,
+  // stopping where the end of its card reaches the bottom of the screen.
   // Used for the clue card on the first place of a visit, and for the result after every guess.
   // Stops if the player touches or scrolls meanwhile.
   let introScrolled = false;
@@ -72,7 +73,11 @@
     ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(t => window.addEventListener(t, stop, opts));
     setTimeout(function () {
       const from = window.scrollY;
+      // Stop once the bottom of the card holding el is in view (not at the page bottom),
+      // unless the card is taller than the screen - then just bring el up under the header.
+      const card = el.closest('.card') || el;
       const to = Math.min(from + el.getBoundingClientRect().top - HEADER,
+        from + card.getBoundingClientRect().bottom - window.innerHeight + 16,
         document.documentElement.scrollHeight - window.innerHeight);
       const map = root.querySelector('.map-wrap');
       const stacked = map && el.getBoundingClientRect().top >= map.getBoundingClientRect().bottom;
@@ -110,13 +115,8 @@
     score += pts;
     const hb = document.getElementById('hintBtn');
     if (hb) hb.remove();
-    // Show the hints that weren't asked for, so the player learns them too
-    (p.hints || []).slice(hintsUsed).forEach(function (h) {
-      const li = document.createElement('li');
-      li.className = 'unused';
-      li.textContent = h;
-      document.getElementById('hints').appendChild(li);
-    });
+    // The hints that weren't asked for go in the info box below, so the player learns them too
+    const unused = (p.hints || []).slice(hintsUsed);
 
     const tx = M.px(p.lon), ty = M.py(p.lat);
     const line = document.createElementNS(NS, 'line');
@@ -139,7 +139,11 @@
       // Same distance bands as the message: close = green, almost = yellow, far = red
       '<div class="feedback ' + (km < 20 ? 'found' : km < 60 ? 'near' : 'far') + '"><strong>' + esc(p.name) + '</strong><br>' +
       (km < 1 ? 'בול!' : (km < 20 ? 'ממש קרוב!' : km < 60 ? 'כמעט!' : 'כיוון טוב!') + ' רק ' + Math.round(km) + ' ק"מ מהמקום') + (pts ? ' · ' + pts + ' נקודות' + (hintsUsed ? ' (' + (hintsUsed === 1 ? 'עם רמז' : 'עם ' + hintsUsed + ' רמזים') + ')' : '') : '') + '</div>' +
-      (p.fact ? '<div class="memory">' + esc(p.fact) + '</div>' : '') +
+      (p.fact || unused.length ? '<div class="memory">' +
+        (unused.length ? '<ul class="hints unused-hints">' +
+          unused.map(h => '<li class="unused">' + esc(h) + '</li>').join('') + '</ul>' : '') +
+        (p.fact ? '<p class="fact">' + esc(p.fact) + '</p>' : '') +
+        '</div>' : '') +
       '<button class="btn" id="next">' + (last ? 'לתוצאה' : 'למקום הבא') + '</button>';
     const next = document.getElementById('next');
     const arrow = scrollArrow(next);

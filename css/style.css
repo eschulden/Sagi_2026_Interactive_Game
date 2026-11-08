@@ -381,6 +381,10 @@ a.add-card:hover { opacity: 1; }
 .hints { margin: 0 0 12px; padding: 0 20px 0 0; color: var(--accent-dark); }
 .hints li { margin: 4px 0; }
 .hints li.unused { color: var(--muted); }
+.memory .unused-hints { margin: 2px 0; }
+.memory .fact { margin: 0; }
+/* line between the unused hints and the place info */
+.memory .unused-hints + .fact { border-top: 1px dashed var(--muted); margin-top: 10px; padding-top: 10px; }
 
 /* Memories pages: buttons and small screens */
 a.btn { display: inline-block; text-decoration: none; }
