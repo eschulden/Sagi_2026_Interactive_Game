@@ -1,0 +1,5 @@
+# Color test photos: only our own trail photos (2026*.jpg, shrunk to 400px) are committed.
+# Photos downloaded from the web belong to others, and _originals holds the full-size backups.
+test-colors/*/*
+!test-colors/*/2026*.jpg
+test-colors/_originals/

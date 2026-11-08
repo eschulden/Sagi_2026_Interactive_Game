@@ -1,5 +1,6 @@
 // "ציד צבעים": photograph something of each color. Photos are checked in the browser.
 // A photo counts when the color covers THRESHOLD% of it, or forms one vivid patch of ACCENT_MIN%.
+// Both are measured center-weighted, so the middle of the photo matters more than its edges.
 // Accepted photos are also sent to Google Drive through C.UPLOAD_URL (apps-script/color-hunt), and each
 // color's page shows the other groups' photos from there. With no UPLOAD_URL the game stays on the phone.
 // The grid is the default view; #<color> opens one color, so the phone's back button works.
@@ -14,7 +15,13 @@
   // Photos are shrunk so the longest side is SAMPLE px: fast on a phone, and it averages away specks
   const SAMPLE = 160;
   // Only pixels at least this colorful and bright can form an accent patch
-  const VIVID_S = 0.45, VIVID_V = 0.3;
+  const VIVID_S = 0.4, VIVID_V = 0.3;
+  // A pixel at the edge of the photo counts EDGE_WEIGHT as much as one at the center (corners a bit less)
+  const EDGE_WEIGHT = 0.35;
+  // A colorful target (not white/brown) also counts when scattered bits of it, like a spike of tiny
+  // flowers, add up to SCATTER_MIN% of the photo. Unrelated photos stay under ~2.5% (test-colors).
+  // Not yellow: sunlit leaves and dry grass make 8-15% yellow in almost any trail photo.
+  const SCATTER_MIN = 4;
   // Longest side of a saved photo; small enough to keep several photos per color in localStorage
   const THUMB = 360;
   // Photos kept per color; together with THUMB this stays well under the browser's ~5MB storage
@@ -218,13 +225,26 @@
   }
 
   // One name per pixel; first match wins, so darkness and grayness are decided before hue.
-  // Brown has no hue band: it is dark orange or dark yellow. Dark olive (50-70°) is shaded leaves, so green.
+  // Gray and black aren't game colors. A phone shoots a white sign in shade at ~75% brightness, so
+  // any near-neutral pixel that bright is white; only darker neutrals are gray. White allows more
+  // tint the brighter the pixel, while dimmer pastels keep their color.
+  // Gray is kept narrow: a faded or washed-out color still has a hue, so only near-neutral pixels
+  // (tiny saturation, or almost no gap between the RGB channels) are gray.
+  // Brown has no hue band: it is muted or dark orange (tan stone, soil, wood), dark muted red (rust),
+  // or dark yellow. Dark olive (50-70°) is shaded leaves, so green.
   function classify(h, s, v) {
     if (v < 0.15) return 'black';
-    if (s < 0.18) return v > 0.8 ? 'white' : 'gray';
-    if (s < 0.25 && v > 0.9) return 'white';
-    if (h >= 345 || h < 15) return s < 0.45 && v > 0.8 ? 'pink' : 'red';
-    if (h < 45) return v < 0.6 ? 'brown' : 'orange';
+    let whiteS = v > 0.9 ? 0.25 : v > 0.85 ? 0.2 : 0.15;
+    if (h >= 190 && h < 250) whiteS = 0.25;           // shade and overcast tint white things blue
+    else if (h >= 270 || h < 10) whiteS *= 0.5;       // a pinkish or lilac tint is a pale flower
+    if (v > 0.6 && s < whiteS) return 'white';
+    if (s < 0.09 || s * v < 0.05) return 'gray';
+    if (h >= 280 && h < 300 && s < 0.3 && v > 0.7) return 'pink';  // pale lilac reads as pink
+    if (h >= 345 || h < 15) {
+      if ((v < 0.45 && s < 0.6) || (v < 0.6 && s < 0.35)) return 'brown';
+      return (s < 0.45 && v > 0.8) || (s < 0.3 && v > 0.65) ? 'pink' : 'red';
+    }
+    if (h < 45) return v < 0.6 || s < 0.4 ? 'brown' : 'orange';
     if (h < 70) return v >= 0.45 ? 'yellow' : h < 50 ? 'brown' : 'green';
     if (h < 165) return 'green';
     if (h < 200) return 'cyan';
@@ -233,8 +253,8 @@
     return 'pink';
   }
 
-  // Size of the largest group of side-touching cells in mask (diagonals don't join)
-  function largestPatch(mask, w, h) {
+  // Weight of the largest group of side-touching cells in mask (diagonals don't join)
+  function largestPatch(mask, weight, w, h) {
     const stack = new Int32Array(w * h);
     let best = 0;
     for (let i = 0; i < mask.length; i++) {
@@ -243,7 +263,7 @@
       stack[top++] = i; mask[i] = 2;
       while (top) {
         const j = stack[--top], x = j % w;
-        size++;
+        size += weight[j];
         if (x > 0 && mask[j - 1] === 1) { mask[j - 1] = 2; stack[top++] = j - 1; }
         if (x < w - 1 && mask[j + 1] === 1) { mask[j + 1] = 2; stack[top++] = j + 1; }
         if (j >= w && mask[j - w] === 1) { mask[j - w] = 2; stack[top++] = j - w; }
@@ -262,22 +282,27 @@
     const ctx = cv.getContext('2d');
     ctx.drawImage(img, 0, 0, w, h);
     const px = ctx.getImageData(0, 0, w, h).data;
-    const counts = {}, vivid = new Uint8Array(w * h);
+    const counts = {}, vivid = new Uint8Array(w * h), weight = new Float32Array(w * h);
     KEYS.forEach(n => { counts[n] = 0; });
     let total = 0;
     for (let i = 0; i < w * h; i++) {
       if (px[i * 4 + 3] < 128) continue;  // transparent: not part of the photo
-      total++;
+      // Center-weighted: what the photo is "of" is usually in the middle, the edges are background.
+      // r² is 0 at the center, 1 at the middle of each edge, 2 in the corners.
+      const dx = ((i % w) + 0.5) / w * 2 - 1, dy = (Math.floor(i / w) + 0.5) / h * 2 - 1;
+      const wt = weight[i] = EDGE_WEIGHT + (1 - EDGE_WEIGHT) * Math.exp(-2 * (dx * dx + dy * dy));
+      total += wt;
       const [hh, s, v] = hsv(px[i * 4], px[i * 4 + 1], px[i * 4 + 2]);
       const name = classify(hh, s, v);
-      counts[name]++;
+      counts[name] += wt;
       if (name === target && s >= VIVID_S && v >= VIVID_V) vivid[i] = 1;
     }
     const share = n => total ? counts[n] / total * 100 : 0;
     const res = { share: share(target), patch: 0 };
     res.byShare = res.share >= C.THRESHOLD;
-    if (!res.byShare && total && NO_ACCENT.indexOf(target) === -1) res.patch = largestPatch(vivid, w, h) / total * 100;
-    res.ok = res.byShare || res.patch >= C.ACCENT_MIN;
+    const accent = NO_ACCENT.indexOf(target) === -1;
+    if (!res.byShare && total && accent) res.patch = largestPatch(vivid, weight, w, h) / total * 100;
+    res.ok = res.byShare || res.patch >= C.ACCENT_MIN || (accent && target !== 'yellow' && res.share >= SCATTER_MIN);
     res.top = KEYS.filter(n => share(n) >= 1).sort((a, b) => counts[b] - counts[a]).slice(0, 3)
       .map(n => NAMES[n] + ' ' + pct(share(n)));
     return res;
