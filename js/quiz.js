@@ -24,14 +24,23 @@
   function start() {
     i = 0; answers = []; reviewing = false;
     root.innerHTML = '<div class="card" style="text-align:center"><p class="lead">' + esc(Q.intro) +
-      '</p><button class="btn" id="go">מתחילים</button>' + Store.startExtras(KEY, Q.questions.length, Q.questions.length) + '</div>';
+      '</p><button class="btn" id="go">מתחילים</button>' + Store.startExtras(KEY, Q.questions.length, Q.questions.length) +
+      (lastRun() ? '<p><button class="btn secondary" id="last">לצפייה בתוצאות האחרונות</button></p>' : '') + '</div>';
     document.getElementById('go').onclick = show;
+    const l = document.getElementById('last');
+    if (l) l.onclick = () => { answers = lastRun(); reviewing = true; finish(); };
     const r = document.getElementById('resume');
     if (r) r.onclick = () => {
       const p = Store.progress(KEY, Q.questions.length);
       i = p.i; answers = Array.isArray(p.answers) ? p.answers.map(a => a === null ? undefined : a) : [];
       show();
     };
+  }
+
+  // Answers of the last finished run (kept so the results can be viewed again later), or null
+  function lastRun() {
+    const l = Store.get(KEY + ':last');
+    return l && Array.isArray(l.answers) && l.answers.length === Q.questions.length ? l.answers : null;
   }
 
   // Resume point is the furthest question reached, even while looking back at earlier ones
@@ -105,6 +114,7 @@
     let end = Q.endings[0];
     Q.endings.forEach(e => { if (pct >= e.min) end = e; });
     // Record the run once; coming back here from the review just shows the result again
+    if (!reviewing) Store.set(KEY + ':last', { answers: answers });
     const best = reviewing ? Store.get(KEY + ':best') || s : Store.finish(KEY, s);
     reviewing = true;
     root.innerHTML = '<div class="card" style="text-align:center"><h2>' + Group.cheer() + '</h2>' +
