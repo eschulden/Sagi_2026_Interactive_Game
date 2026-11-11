@@ -257,6 +257,16 @@ h1, h2, h3 { font-weight: 400; }
 .option.wrong { border-color: var(--bad); background: #fbeceb; }
 
 .feedback { padding: 12px 16px; border-radius: 12px; background: var(--soft); margin-bottom: 14px; }
+/* Quiz: small back/forward arrows around "שאלה X מתוך Y" */
+.q-nav { display: inline-flex; align-items: center; gap: 10px; }
+.q-arrows { display: inline-flex; gap: 4px; }
+.q-arrow {
+  font: inherit; font-size: 1.2rem; line-height: 1; cursor: pointer;
+  width: 30px; height: 30px; padding: 0 0 3px; border-radius: 50%;
+  background: #fff; color: var(--accent-dark); border: 2px solid var(--accent);
+}
+.q-arrow:disabled { opacity: .3; cursor: default; }
+.stats:has(.q-nav) { align-items: center; }
 .quiz-photo { display: block; max-width: 100%; max-height: 60vh; margin: 0 auto 14px; border-radius: 12px; }
 .next-stop { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--accent); text-align: center; }
 .next-stop p { font-weight: 700; margin: 0 0 10px; }

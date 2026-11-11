@@ -3,7 +3,12 @@
   const root = document.getElementById('quiz');
   // One save slot per quiz page (sagi-quiz.html, know-place.html, trail-markers.html)
   const KEY = 'quiz:' + (location.pathname.split('/').pop() || 'sagi-quiz.html');
-  let i = 0, score = 0, answered = false;
+  // answers[k] = option chosen for question k (undefined until answered). An answer is
+  // final: going back shows it again but can't change it, so the score can't be gamed.
+  // reviewing = looking back over a finished run from the results page (nothing is saved)
+  let i = 0, answers = [], reviewing = false;
+
+  function score() { return answers.filter((a, k) => a === Q.questions[k].answer).length; }
 
   function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
 
@@ -17,58 +22,98 @@
   }
 
   function start() {
-    i = 0; score = 0;
+    i = 0; answers = []; reviewing = false;
     root.innerHTML = '<div class="card" style="text-align:center"><p class="lead">' + esc(Q.intro) +
       '</p><button class="btn" id="go">מתחילים</button>' + Store.startExtras(KEY, Q.questions.length, Q.questions.length) + '</div>';
     document.getElementById('go').onclick = show;
     const r = document.getElementById('resume');
-    if (r) r.onclick = () => { const p = Store.progress(KEY, Q.questions.length); i = p.i; score = p.score; show(); };
+    if (r) r.onclick = () => {
+      const p = Store.progress(KEY, Q.questions.length);
+      i = p.i; answers = Array.isArray(p.answers) ? p.answers.map(a => a === null ? undefined : a) : [];
+      show();
+    };
+  }
+
+  // Resume point is the furthest question reached, even while looking back at earlier ones
+  function save() {
+    if (reviewing) return;
+    const far = Math.max(i, Math.min(answers.length, Q.questions.length - 1));
+    Store.set(KEY, { i: far, score: score(), answers: answers });
   }
 
   function show() {
-    answered = false;
-    Store.set(KEY, { i: i, score: score });
+    save();
     const q = Q.questions[i];
     root.innerHTML = '<div class="card">' +
-      '<div class="stats"><span>שאלה ' + (i + 1) + ' מתוך ' + Q.questions.length + '</span><span>נכונות: ' + score + '</span></div>' +
+      '<div class="stats"><span class="q-nav">' +
+        'שאלה ' + (i + 1) + ' מתוך ' + Q.questions.length +
+        '<span class="q-arrows">' +
+          '<button class="q-arrow" id="prev" aria-label="לשאלה הקודמת">‹</button>' +
+          '<button class="q-arrow" id="fwd" aria-label="לשאלה הבאה">›</button>' +
+        '</span></span><span>נכונות: <span id="score">' + score() + '</span></span></div>' +
       '<div class="progress"><div style="width:' + (i / Q.questions.length) * 100 + '%"></div></div>' +
       (q.show ? figures(q.show) : '') +
       (q.marker ? '<div class="marker-show">' + window.TrailMarker.svg(q.marker, 110) + '</div>' : '') +
       '<h2>' + esc(q.q) + '</h2>' +
       '<div class="options' + (typeof q.options[0] === 'string' ? '' : ' visual') + '">' + q.options.map((o, k) => '<button class="option" data-i="' + k + '">' + optionHtml(o) + '</button>').join('') + '</div>' +
-      '<div id="after"></div></div>';
+      '<div id="after"></div><div id="nav"></div></div>';
     root.querySelectorAll('.option').forEach(b => b.onclick = () => pick(+b.dataset.i));
+    if (answers[i] !== undefined) reveal(); else nav();
   }
 
   function pick(k) {
-    if (answered) return;
-    answered = true;
-    const q = Q.questions[i];
+    if (answers[i] !== undefined) return;
+    answers[i] = k;
+    save();
+    document.getElementById('score').textContent = score();
+    reveal();
+  }
+
+  // Marks the chosen answer and shows the explanation (just answered, or revisited)
+  function reveal() {
+    const q = Q.questions[i], k = answers[i];
     const ok = k === q.answer;
-    if (ok) score++;
     root.querySelectorAll('.option').forEach((b, j) => {
       b.disabled = true;
       if (j === q.answer) b.classList.add('correct');
       else if (j === k) b.classList.add('wrong');
     });
-    const last = i === Q.questions.length - 1;
     document.getElementById('after').innerHTML =
       '<div class="feedback">' + (ok ? 'נכון! ' : 'לא בדיוק. ') + (q.note ? esc(q.note) : '') + '</div>' +
       (q.reveal ? figures(q.reveal) : '') +
-      (q.image ? '<img class="quiz-photo" src="' + esc(q.image) + '" alt="">' : '') +
-      '<button class="btn" id="next">' + (last ? 'לתוצאה' : 'לשאלה הבאה') + '</button>';
-    document.getElementById('next').onclick = () => { i++; i < Q.questions.length ? show() : finish(); };
+      (q.image ? '<img class="quiz-photo" src="' + esc(q.image) + '" alt="">' : '');
+    nav();
+  }
+
+  // Small arrows by the question counter: back (from the 2nd question on) and forward
+  // (once this question is answered). The big button under the explanation also goes forward.
+  function nav() {
+    const answered = answers[i] !== undefined, last = i === Q.questions.length - 1;
+    const forward = () => { i++; i < Q.questions.length ? show() : finish(); };
+    const p = document.getElementById('prev'), f = document.getElementById('fwd');
+    p.disabled = i === 0;
+    p.onclick = () => { i--; show(); };
+    f.disabled = !answered;
+    f.onclick = forward;
+    document.getElementById('nav').innerHTML = answered ? '<button class="btn" id="next">' + (last ? 'לתוצאה' : 'לשאלה הבאה') + '</button>' : '';
+    if (answered) document.getElementById('next').onclick = forward;
   }
 
   function finish() {
-    const pct = (score / Q.questions.length) * 100;
+    const s = score();
+    const pct = (s / Q.questions.length) * 100;
     let end = Q.endings[0];
     Q.endings.forEach(e => { if (pct >= e.min) end = e; });
-    const best = Store.finish(KEY, score);
+    // Record the run once; coming back here from the review just shows the result again
+    const best = reviewing ? Store.get(KEY + ':best') || s : Store.finish(KEY, s);
+    reviewing = true;
     root.innerHTML = '<div class="card" style="text-align:center"><h2>' + Group.cheer() + '</h2>' +
       '<p style="font-size:2.4rem;margin:0">❤️</p>' +
-      '<p>ענית נכון על <strong>' + score + ' מתוך ' + Q.questions.length + '</strong> · שיא: ' + best + '</p>' +
-      '<p class="lead">' + esc(end.text) + '</p><button class="btn" id="again">שוב</button>' + Group.nextStop() + '</div>';
+      '<p>ענית נכון על <strong>' + s + ' מתוך ' + Q.questions.length + '</strong> · שיא: ' + best + '</p>' +
+      '<p class="lead">' + esc(end.text) + '</p>' +
+      '<div class="btn-row"><button class="btn secondary" id="review">לצפייה בשאלות ובתשובות</button><button class="btn" id="again">שוב</button></div>' +
+      Group.nextStop() + '</div>';
+    document.getElementById('review').onclick = () => { i = 0; show(); };
     document.getElementById('again').onclick = start;
   }
 
