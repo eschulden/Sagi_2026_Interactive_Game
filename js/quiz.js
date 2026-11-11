@@ -55,6 +55,7 @@
     document.getElementById('after').innerHTML =
       '<div class="feedback">' + (ok ? 'נכון! ' : 'לא בדיוק. ') + (q.note ? esc(q.note) : '') + '</div>' +
       (q.reveal ? figures(q.reveal) : '') +
+      (q.image ? '<img class="quiz-photo" src="' + esc(q.image) + '" alt="">' : '') +
       '<button class="btn" id="next">' + (last ? 'לתוצאה' : 'לשאלה הבאה') + '</button>';
     document.getElementById('next').onclick = () => { i++; i < Q.questions.length ? show() : finish(); };
   }
